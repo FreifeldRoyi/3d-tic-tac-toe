@@ -16,7 +16,7 @@ BYTE* allocate_BYTE(unsigned num);
  */
 BYTE* BYTE_memcpy(BYTE* dest, BYTE* src, unsigned num_of_bytes);
 
-ply_t* allocate_ply();
+move_t* allocate_move();
 
 err_composition compose_errors(err_composition e1, err_composition e2);
 

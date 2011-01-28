@@ -51,7 +51,7 @@ typedef struct _ply_t
 	unsigned board;
 	unsigned row;
 	unsigned col;
-} ply_t;
+} move_t;
 
 /* logic operations */
 #define and_op(num1,num2) (num1 & num2)

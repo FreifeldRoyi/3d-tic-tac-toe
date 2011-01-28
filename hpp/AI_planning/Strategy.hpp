@@ -17,7 +17,7 @@ class Strategy
 		unsigned _player;
 
 	public:
-		virtual ply_t apply_strategy() = 0;
+		virtual move_t apply_strategy() = 0;
 };
 
 #endif /* STRATEGY_HPP_ */

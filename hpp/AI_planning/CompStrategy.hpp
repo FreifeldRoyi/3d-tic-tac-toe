@@ -14,9 +14,9 @@ typedef struct _board_tree_t
 {
 	Boards* current; //current state
 	struct _board_tree_t* ex_children; //expanded children array
-	ply_t* unex_children; //unexpanded
+	move_t* unex_children; //unexpanded
 	unsigned num_of_children; //number of children
-	ply_t* best_move; //the best move returned by the recursion
+	move_t* best_move; //the best move returned by the recursion
 	int value;
 } board_tree_t;
 
@@ -45,7 +45,7 @@ class CompStrategy : public Strategy
 		CompStrategy(Boards* board, unsigned player, int look_ahead = 4); //according to assay
 		~CompStrategy();
 
-		void apply_strategy(Boards& board, ply_t* ply);
+		void apply_strategy(Boards& board, move_t* ply);
 };
 
 

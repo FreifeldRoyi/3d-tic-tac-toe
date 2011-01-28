@@ -15,9 +15,9 @@ HumanStrategy::HumanStrategy(Boards* brd, unsigned player)
 
 HumanStrategy::~HumanStrategy() {}
 
-ply_t HumanStrategy::apply_strategy()
+move_t HumanStrategy::apply_strategy()
 {
-	ply_t to_return;
+	move_t to_return;
 	std::string player_name;
 
 	if (_player == X_PLAYER)

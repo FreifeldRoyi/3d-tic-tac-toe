@@ -14,14 +14,14 @@
 
 UIController::UIController()
 {
-	_ply = new list<ply_t>();
+	_moves = new list<move_t>();
 	_boards = NULL;
 }
 
 UIController::~UIController()
 {
 	reset();
-	delete _ply;
+	delete _moves;
 }
 
 err_composition UIController::set_o(int board_num,int row, int col)
@@ -36,9 +36,9 @@ err_composition UIController::set_x(int board_num,int row, int col)
 
 void UIController::take_back()
 {
-	ply_t p = _ply->back();
+	move_t p = _moves->back();
 	_boards->player_move(p.player,p.board,p.row,p.col,true);
-	_ply->pop_back(); //calls destructor
+	_moves->pop_back(); //calls destructor
 }
 
 void UIController::init_game(int board_dim, bool full_game)
@@ -58,9 +58,6 @@ void UIController::play_1P_VS_COMP()
 
 void UIController::play_1P_VS_2P()
 {
-	HumanStrategy p1(_boards,X_PLAYER);
-	HumanStrategy p2(_boards,O_PLAYER);
-
 	int dim;
 	char full_game;
 
@@ -86,8 +83,10 @@ void UIController::play_1P_VS_2P()
 	else
 		init_game(dim,false);
 
+	HumanStrategy p1(_boards,X_PLAYER);
+	HumanStrategy p2(_boards,O_PLAYER);
+
 	play(p1,p2);
-	//TODO 1P VS 2P
 }
 
 void UIController::play_COMP_VS_COMP()
@@ -110,19 +109,19 @@ void UIController::reset()
 		_boards = NULL;
 	}
 
-	_ply->erase(_ply->begin(),_ply->end());
+	_moves->erase(_moves->begin(),_moves->end());
 }
 
 void UIController::push_move(unsigned player, unsigned board, unsigned row, unsigned col)
 {
-	ply_t p;
+	move_t p;
 
 	p.player = player;
 	p.board = board;
 	p.col = col;
 	p.row = row;
 
-	_ply->push_back(p);
+	_moves->push_back(p);
 }
 
 err_composition UIController::set_move(unsigned player, int board,int row, int col)
@@ -135,14 +134,14 @@ err_composition UIController::set_move(unsigned player, int board,int row, int c
 	return to_return;
 }
 
-victory_t UIController::is_end(ply_t* ply)
+victory_t UIController::is_end(move_t* ply)
 {
 	victory_t to_return = VIC_CONT;
 	//TODO
 	return to_return;
 }
 
-void UIController::try_ply(ply_t* ply, Strategy& s)
+void UIController::try_move(move_t* ply, Strategy& s)
 {
 	err_composition err = ERR_OK;
 
@@ -159,15 +158,15 @@ void UIController::try_ply(ply_t* ply, Strategy& s)
 
 void UIController::play(Strategy& s1, Strategy& s2)
 {
-	ply_t ply;
+	move_t move;
 
 	do
 	{
 		//TODO not good, needs while(is_end) check after every move
-		ply.player = X_PLAYER;
-		try_ply(&ply,s1);
-		ply.player = O_PLAYER;
-		try_ply(&ply, s2);
+		move.player = X_PLAYER;
+		try_move(&move,s1);
+		move.player = O_PLAYER;
+		try_move(&move, s2);
 
-	} while (is_end(&ply) == VIC_CONT);
+	} while (is_end(&move) == VIC_CONT);
 }

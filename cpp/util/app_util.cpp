@@ -56,9 +56,9 @@ BYTE* BYTE_memcpy(BYTE* dest, BYTE* src, unsigned num_of_bytes)
 	return dest;
 }
 
-ply_t* allocate_ply()
+move_t* allocate_move()
 {
-	return (ply_t*)malloc(sizeof(ply_t));
+	return (move_t*)malloc(sizeof(move_t));
 }
 
 err_composition compose_errors(err_composition e1, err_composition e2)

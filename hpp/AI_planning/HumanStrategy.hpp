@@ -16,7 +16,7 @@ class HumanStrategy : public Strategy
 		HumanStrategy(Boards* brd, unsigned player);
 		~HumanStrategy();
 
-		ply_t apply_strategy();
+		move_t apply_strategy();
 };
 
 #endif /* HUMANSTRATEGY_HPP_ */

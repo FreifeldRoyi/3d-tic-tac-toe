@@ -18,7 +18,7 @@ class UIController
 {
 	private:
 		Boards* _boards;
-		list<ply_t>* _ply; //moves
+		list<move_t>* _moves; //moves
 
 		/**
 		 * resets data structures
@@ -36,7 +36,7 @@ class UIController
 		err_composition check_input(int board, int row, int col);*/
 
 		/**
-		 * insert new move to _ply
+		 * insert new move to _moves
 		 */
 		void push_move(unsigned player, unsigned board, unsigned row, unsigned col);
 
@@ -46,12 +46,12 @@ class UIController
 		 * checks if the game ended after the last move
 		 * /param ply - last move played
 		 */
-		victory_t is_end(ply_t* ply);
+		victory_t is_end(move_t* ply);
 
 		/**
 		 * Will apply strategy s untill it's a valid one
 		 */
-		void try_ply(ply_t* ply, Strategy& s);
+		void try_move(move_t* move, Strategy& s);
 
 		/**
 		 * Main "game loop"

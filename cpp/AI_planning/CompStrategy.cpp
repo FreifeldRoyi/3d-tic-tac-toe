@@ -19,7 +19,7 @@ CompStrategy::CompStrategy(Boards* board, unsigned player,int look_ahead) : _loo
 CompStrategy::~CompStrategy()
 {}
 
-void CompStrategy::apply_strategy(Boards& board, ply_t* ply)
+void CompStrategy::apply_strategy(Boards& board, move_t* ply)
 {
 	//TODO
 }
