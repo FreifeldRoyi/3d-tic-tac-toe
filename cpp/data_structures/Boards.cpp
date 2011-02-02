@@ -11,8 +11,10 @@ Boards::Boards(unsigned num_of_boards, unsigned boards_dim) :
 	_o_boards = new ByteArray(number_of_boards_to_bytes(num_of_boards));
 	_taken = new ByteArray(number_of_boards_to_bytes(num_of_boards));
 
+	_static_heuristic = 0;
+	_empty_slots = boards_dim * boards_dim * num_of_boards;
+
 	_space_per_cell = 3;
-	_cell_taken = boards_dim * boards_dim * num_of_boards;
 }
 
 Boards::Boards(const Boards& brd)
@@ -20,12 +22,14 @@ Boards::Boards(const Boards& brd)
 	_num_of_boards = brd.get_num_of_boards();
 	_board_dim = brd.get_board_dim();
 
+	_static_heuristic = brd.get_heuristic_value();
+	_empty_slots = brd.get_cell_taken();
+
 	_o_boards = brd.get_o_board();
 	_x_boards = brd.get_x_board();
 	_taken = brd.get_taken_board();
 
 	_space_per_cell = 3;
-	_cell_taken = brd.get_cell_taken();
 }
 
 Boards::~Boards()
@@ -45,6 +49,11 @@ unsigned Boards::get_board_dim() const
 	return _board_dim;
 }
 
+double Boards::get_heuristic_value() const
+{
+	return _static_heuristic;
+}
+
 ByteArray* Boards::get_x_board(int idx) const
 {
 	return get_board(_x_boards,idx);
@@ -62,21 +71,13 @@ ByteArray* Boards::get_taken_board(int idx) const
 
 int Boards::get_cell_taken() const
 {
-	return _cell_taken;
+	return _empty_slots;
 }
 
-move_err_t Boards::player_move(unsigned player,
-		unsigned board,
-		unsigned row,
-		unsigned col,
+move_err_t Boards::player_move(move_t* move,
 		bool take_back)
 {
-	return set_move(player,board,row,col,take_back);
-}
-
-int Boards::get_value_of(move_t* move)
-{
-//TODO get value of
+	return set_move(move,take_back);
 }
 
 std::string Boards::to_string(unsigned space)
@@ -160,30 +161,27 @@ unsigned Boards::locate_board_start_idx(unsigned board) const
 	return (_board_dim * _board_dim * board) / BYTE_SIZE;
 }
 
-move_err_t Boards::set_move(unsigned player,
-		unsigned board,
-		unsigned row,
-		unsigned col,
+move_err_t Boards::set_move(move_t* move,
 		bool take_back)
 {
 	move_err_t to_return = ERR_OK;
 	ByteArray* t_move_board = NULL;
 	
-	if (player == 1)
+	if (move->player == 1)
 		t_move_board = _x_boards;
-	else if (player == 0)
+	else if (move->player == 0)
 		t_move_board = _o_boards;
 
 	if (t_move_board != NULL)
 	{
-		if (board < _num_of_boards)
+		if (move->board < _num_of_boards)
 		{
-			if (row < _board_dim)
+			if (move->row < _board_dim)
 			{
-				if (col < _board_dim)
+				if (move->col < _board_dim)
 				{
-					unsigned t_byte_start_idx = locate_board_start_idx(board); //starting BYTE idx
-					unsigned t_bit_to_change = locate_offset(board,row,col); //bit to change offset from the beginning of BYTE
+					unsigned t_byte_start_idx = locate_board_start_idx(move->board); //starting BYTE idx
+					unsigned t_bit_to_change = locate_offset(move->board,move->row,move->col); //bit to change offset from the beginning of BYTE
 
 					if (t_bit_to_change >= BYTE_SIZE) //overflow handling
 					{
@@ -198,7 +196,7 @@ move_err_t Boards::set_move(unsigned player,
 						{
 							t_move_board->set_bit(t_byte_start_idx,t_bit_to_change); //set the correct bit
 							_taken->set_bit(t_byte_start_idx,t_bit_to_change); //mark place as taken
-							--_cell_taken;
+							--_empty_slots;
 							to_return = ERR_OK;
 						}
 						else

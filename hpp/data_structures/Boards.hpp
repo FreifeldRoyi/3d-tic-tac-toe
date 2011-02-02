@@ -3,15 +3,22 @@
 
 #include "ByteArray.hpp"
 
+#define ON_LEFT_RIGHT_DIAG(board,dim,row,col) ((row) == (col))
+#define ON_RIGHT_LEFT_DIAG(board,dim,row,col) ((row) + (col) == ((dim) - 1))
+#define BOARD_SPREAD(board,dim,row,col) ((row) == (board))
+
 class Boards
 {
 	private:
 		unsigned _num_of_boards;
 		unsigned _board_dim;
+
+		double _static_heuristic; //static heuritic function
+		int _empty_slots; //empty slots left on the board
+
 		ByteArray* _x_boards;
 		ByteArray* _o_boards;
 		ByteArray* _taken;
-		int _cell_taken;
 
 		unsigned _space_per_cell; //defaults to 3. number of chars in a cell
 
@@ -58,11 +65,39 @@ class Boards
 		 * /param col - col number
 		 * /param take_back - undo last move
 		 */
-		move_err_t set_move(unsigned player,
-				unsigned board,
-				unsigned row,
-				unsigned col,
+		move_err_t set_move(move_t* move,
 				bool take_back);
+
+		/**
+		 * TODO
+		 */
+		int single_board_row_count(move_t* move);
+
+		/**
+		 * TODO
+		 */
+		int single_board_col_count(move_t* move);
+
+		/**
+		 * TODO
+		 */
+		int single_board_diag_count(move_t* move);
+
+		/**
+		 * TODO
+		 */
+		int multi_board_row_count(move_t* move);
+
+		/** TODO
+		 * calculates the new static heuristic value after
+		 * the move given as a parameter
+		 *
+		 * /param player - the player idx
+		 * /param board - the board idx
+		 * /param row - the row idx
+		 * /param col - the column idx
+		 */
+		double calc_hueristic(move_t* move);
 
 		/*******to_string helper functions*******/
 
@@ -99,6 +134,8 @@ class Boards
 		unsigned get_num_of_boards() const;
 		unsigned get_board_dim() const;
 
+		double get_heuristic_value() const;
+
 		/* returns a copy of the board
 		 * if board with number num is unavailable NULL is returned
 		 * if num < 0 returns a copy of all board array
@@ -114,13 +151,8 @@ class Boards
 
 		int get_cell_taken() const;
 
-		move_err_t player_move(unsigned player,
-				unsigned board,
-				unsigned row,
-				unsigned col,
+		move_err_t player_move(move_t* move,
 				bool take_back);
-
-		int get_value_of(move_t* move);
 
 		std::string to_string(unsigned space = 0);
 };

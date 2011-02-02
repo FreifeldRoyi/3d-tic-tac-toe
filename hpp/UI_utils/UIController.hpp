@@ -40,9 +40,9 @@ class UIController
 		/**
 		 * insert new move to _moves
 		 */
-		void push_move(unsigned player, unsigned board, unsigned row, unsigned col);
+		void push_move(move_t* move);
 
-		err_composition set_move(unsigned player, int board,int row, int col);
+		err_composition set_move(move_t* move);
 
 		/**
 		 * checks if the game ended after the last move
@@ -63,8 +63,8 @@ class UIController
 		UIController();
 		~UIController();
 
-		err_composition set_x(int board_num,int row, int col);
-		err_composition set_o(int board_num,int row, int col);
+		//err_composition set_x(int board_num,int row, int col);
+		//err_composition set_o(int board_num,int row, int col);
 
 		/**
 		 * undo the last move

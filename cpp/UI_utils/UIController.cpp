@@ -27,7 +27,7 @@ UIController::~UIController()
 	delete _moves;
 }
 
-err_composition UIController::set_o(int board_num,int row, int col)
+/*err_composition UIController::set_o(int board_num,int row, int col)
 {
 	return set_move(O_PLAYER,board_num,row,col);
 }
@@ -35,12 +35,12 @@ err_composition UIController::set_o(int board_num,int row, int col)
 err_composition UIController::set_x(int board_num,int row, int col)
 {
 	return set_move(X_PLAYER,board_num,row,col);
-}
+}*/
 
 void UIController::take_back()
 {
 	move_t p = _moves->back();
-	_boards->player_move(p.player,p.board,p.row,p.col,true);
+	_boards->player_move(&p,true);
 	_moves->pop_back(); //calls destructor
 }
 
@@ -128,24 +128,24 @@ void UIController::reset()
 	_game_end = false;
 }
 
-void UIController::push_move(unsigned player, unsigned board, unsigned row, unsigned col)
+void UIController::push_move(move_t* move)
 {
 	move_t p;
 
-	p.player = player;
-	p.board = board;
-	p.col = col;
-	p.row = row;
+	p.player = move->player;
+	p.board = move->board;
+	p.col = move->col;
+	p.row = move->row;
 
 	_moves->push_back(p);
 }
 
-err_composition UIController::set_move(unsigned player, int board,int row, int col)
+err_composition UIController::set_move(move_t* move)
 {
-	err_composition to_return = _boards->player_move(player,board,row,col,false);
+	err_composition to_return = _boards->player_move(move,false);
 
 	if (to_return == ERR_OK)
-		push_move(player,board,row,col);
+		push_move(move);
 
 	return to_return;
 }
@@ -171,7 +171,7 @@ void UIController::try_move(move_t* move)
 		_strat_arr[move->player]->print_board();
 
 		*move = _strat_arr[move->player]->apply_strategy();
-		err = set_move(move->player, move->board, move->row, move->col);
+		err = set_move(move);
 
 		_strat_arr[move->player]->print_board();
 

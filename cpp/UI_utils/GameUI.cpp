@@ -68,7 +68,7 @@ menu_input_e GameUI::get_menu_input()
 	std::cin >> input;
 
 	if (input > 0 && input <= 5)
-		to_return = static_cast<menu_input_e>(input); // TODO so god damn ugly...
+		to_return = static_cast<menu_input_e>(input);
 	else
 		to_return = MENU_ERROR;
 
