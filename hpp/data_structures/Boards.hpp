@@ -88,6 +88,21 @@ class Boards
 		 */
 		int multi_board_row_count(move_t* move);
 
+		/**
+		 * TODO
+		 */
+		int multi_board_col_count(move_t* move);
+
+		/**
+		 * TODO
+		 */
+		int multi_board_diag_count(move_t* move);
+
+		/**
+		 * TODO
+		 */
+		int multi_board_pierce_col_count(move_t* move);
+
 		/** TODO
 		 * calculates the new static heuristic value after
 		 * the move given as a parameter
