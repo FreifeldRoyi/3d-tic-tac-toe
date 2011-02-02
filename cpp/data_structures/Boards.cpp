@@ -74,7 +74,7 @@ move_err_t Boards::player_move(unsigned player,
 	return set_move(player,board,row,col,take_back);
 }
 
-int Boards::get_value_of(move_t* ply)
+int Boards::get_value_of(move_t* move)
 {
 //TODO get value of
 }

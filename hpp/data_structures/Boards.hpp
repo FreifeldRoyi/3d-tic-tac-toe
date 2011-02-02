@@ -120,7 +120,7 @@ class Boards
 				unsigned col,
 				bool take_back);
 
-		int get_value_of(move_t* ply);
+		int get_value_of(move_t* move);
 
 		std::string to_string(unsigned space = 0);
 };

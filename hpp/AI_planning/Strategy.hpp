@@ -18,6 +18,7 @@ class Strategy
 
 	public:
 		virtual move_t apply_strategy() = 0;
+		virtual void print_board() = 0;
 };
 
 #endif /* STRATEGY_HPP_ */

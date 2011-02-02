@@ -16,6 +16,9 @@ UIController::UIController()
 {
 	_moves = new list<move_t>();
 	_boards = NULL;
+	_strat_arr[O_PLAYER] = NULL;
+	_strat_arr[X_PLAYER] = NULL;
+	_game_end = false;
 }
 
 UIController::~UIController()
@@ -83,10 +86,10 @@ void UIController::play_1P_VS_2P()
 	else
 		init_game(dim,false);
 
-	HumanStrategy p1(_boards,X_PLAYER);
-	HumanStrategy p2(_boards,O_PLAYER);
+	_strat_arr[O_PLAYER] = new HumanStrategy(_boards,O_PLAYER);
+	_strat_arr[X_PLAYER] = new HumanStrategy(_boards,X_PLAYER);
 
-	play(p1,p2);
+	play();
 }
 
 void UIController::play_COMP_VS_COMP()
@@ -109,7 +112,20 @@ void UIController::reset()
 		_boards = NULL;
 	}
 
+	if (_strat_arr[O_PLAYER] != NULL)
+	{
+		delete _strat_arr[O_PLAYER];
+		_strat_arr[O_PLAYER] = NULL;
+	}
+
+	if (_strat_arr[X_PLAYER] != NULL)
+	{
+		delete _strat_arr[X_PLAYER];
+		_strat_arr[X_PLAYER] = NULL;
+	}
+
 	_moves->erase(_moves->begin(),_moves->end());
+	_game_end = false;
 }
 
 void UIController::push_move(unsigned player, unsigned board, unsigned row, unsigned col)
@@ -134,39 +150,47 @@ err_composition UIController::set_move(unsigned player, int board,int row, int c
 	return to_return;
 }
 
-victory_t UIController::is_end(move_t* ply)
+victory_t UIController::is_end()
 {
 	victory_t to_return = VIC_CONT;
-	//TODO
+
+	if (_game_end)
+	{
+		//TODO check who is the winner
+	}
+
 	return to_return;
 }
 
-void UIController::try_move(move_t* ply, Strategy& s)
+void UIController::try_move(move_t* move)
 {
 	err_composition err = ERR_OK;
 
-	do //TODO change code... too ugly
+	do
 	{
-		*ply = s.apply_strategy();
+		_strat_arr[move->player]->print_board();
 
-		err = set_move(ply->player, ply->board, ply->row, ply->col);
+		*move = _strat_arr[move->player]->apply_strategy();
+		err = set_move(move->player, move->board, move->row, move->col);
+
+		_strat_arr[move->player]->print_board();
 
 		if (err != ERR_OK)
 			std::cout << "bad move. try again" << std::endl;
+
 	} while (err != ERR_OK);
 }
 
-void UIController::play(Strategy& s1, Strategy& s2)
+void UIController::play()
 {
 	move_t move;
 
+	move.player = X_PLAYER;
+
 	do
 	{
-		//TODO not good, needs while(is_end) check after every move
-		move.player = X_PLAYER;
-		try_move(&move,s1);
-		move.player = O_PLAYER;
-		try_move(&move, s2);
+		try_move(&move);
+		move.player = CHANGE_PLAYER(move.player);
 
-	} while (is_end(&move) == VIC_CONT);
+	} while (is_end() == VIC_CONT);
 }

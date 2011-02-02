@@ -16,6 +16,7 @@ class HumanStrategy : public Strategy
 		HumanStrategy(Boards* brd, unsigned player);
 		~HumanStrategy();
 
+		void print_board();
 		move_t apply_strategy();
 };
 

@@ -4,9 +4,6 @@
  *  Created on: Jan 17, 2011
  *      Author: freifeldroyi
  */
-
-//TODO like duh?!
-
 #include "../../hpp/AI_planning/CompStrategy.hpp"
 #include <malloc.h>
 
@@ -16,10 +13,11 @@ CompStrategy::CompStrategy(Boards* board, unsigned player,int look_ahead) : _loo
 	_player = player;
 }
 
-CompStrategy::~CompStrategy()
-{}
+CompStrategy::~CompStrategy() {}
 
-void CompStrategy::apply_strategy(Boards& board, move_t* ply)
+void CompStrategy::print_board() {}
+
+void CompStrategy::apply_strategy(Boards& board, move_t* move)
 {
 	//TODO
 }

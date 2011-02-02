@@ -45,7 +45,8 @@ class CompStrategy : public Strategy
 		CompStrategy(Boards* board, unsigned player, int look_ahead = 4); //according to assay
 		~CompStrategy();
 
-		void apply_strategy(Boards& board, move_t* ply);
+		void print_board();
+		void apply_strategy(Boards& board, move_t* move);
 };
 
 

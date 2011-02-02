@@ -19,6 +19,8 @@ class UIController
 	private:
 		Boards* _boards;
 		list<move_t>* _moves; //moves
+		Strategy* _strat_arr[2]; //TODO change to a const???
+		bool _game_end;
 
 		/**
 		 * resets data structures
@@ -44,19 +46,18 @@ class UIController
 
 		/**
 		 * checks if the game ended after the last move
-		 * /param ply - last move played
 		 */
-		victory_t is_end(move_t* ply);
+		victory_t is_end();
 
 		/**
-		 * Will apply strategy s untill it's a valid one
+		 * Will apply strategy s until it's a valid one
 		 */
-		void try_move(move_t* move, Strategy& s);
+		void try_move(move_t* move);//, Strategy& s);
 
 		/**
 		 * Main "game loop"
 		 */
-		void play(Strategy& s1, Strategy& s2);
+		void play();//(Strategy& s_O, Strategy& s_X);
 
 	public:
 		UIController();

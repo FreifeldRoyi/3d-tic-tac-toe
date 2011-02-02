@@ -10,6 +10,8 @@
 
 #define X_PLAYER 1
 #define O_PLAYER 0
+#define PLAYER_ARR {O_PLAYER,X_PLAYER}
+#define CHANGE_PLAYER(player) (1 - (player))
 
 #define BIT_ON 1
 #define BIT_OFF 0
@@ -45,7 +47,7 @@ enum victory_t
  * will be used to keep track of all moves that were done during the game
  * maybe for 'undo' also
  */
-typedef struct _ply_t
+typedef struct _move_t
 {
 	unsigned player;
 	unsigned board;
