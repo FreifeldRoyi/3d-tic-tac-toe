@@ -34,7 +34,11 @@ void CompStrategy::apply_strategy(move_t* move)
 
 move_t CompStrategy::apply_strategy()
 {
+	move_t to_return;
 
+	//TODO
+
+	return to_return;
 }
 
 /*private*/
