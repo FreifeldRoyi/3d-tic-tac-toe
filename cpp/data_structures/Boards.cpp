@@ -7,12 +7,15 @@ Boards::Boards(unsigned num_of_boards, unsigned boards_dim) :
 	_num_of_boards(num_of_boards), 
 	_board_dim(boards_dim)
 {
-	_x_boards = new ByteArray(number_of_boards_to_bytes(num_of_boards));
-	_o_boards = new ByteArray(number_of_boards_to_bytes(num_of_boards));
+	//_x_boards = new ByteArray(number_of_boards_to_bytes(num_of_boards));
+	//_o_boards = new ByteArray(number_of_boards_to_bytes(num_of_boards));
+	_boards[O_PLAYER] = new ByteArray(number_of_boards_to_bytes(num_of_boards));
+	_boards[X_PLAYER] = new ByteArray(number_of_boards_to_bytes(num_of_boards));
 	_taken = new ByteArray(number_of_boards_to_bytes(num_of_boards));
 
-	_static_heuristic = 0;
 	_empty_slots = boards_dim * boards_dim * num_of_boards;
+
+
 
 	_space_per_cell = 3;
 }
@@ -22,11 +25,12 @@ Boards::Boards(const Boards& brd)
 	_num_of_boards = brd.get_num_of_boards();
 	_board_dim = brd.get_board_dim();
 
-	_static_heuristic = brd.get_heuristic_value();
 	_empty_slots = brd.get_cell_taken();
 
-	_o_boards = brd.get_o_board();
-	_x_boards = brd.get_x_board();
+	_boards[O_PLAYER] = brd.get_o_board();
+	_boards[X_PLAYER] = brd.get_x_board();
+	//_o_boards = brd.get_o_board();
+	//_x_boards = brd.get_x_board();
 	_taken = brd.get_taken_board();
 
 	_space_per_cell = 3;
@@ -34,8 +38,10 @@ Boards::Boards(const Boards& brd)
 
 Boards::~Boards()
 {
-	delete _x_boards;
-	delete _o_boards;
+	//delete _x_boards;
+	//delete _o_boards;
+	delete _boards[O_PLAYER];
+	delete _boards[X_PLAYER];
 	delete _taken;
 }
 
@@ -49,19 +55,16 @@ unsigned Boards::get_board_dim() const
 	return _board_dim;
 }
 
-double Boards::get_heuristic_value() const
-{
-	return _static_heuristic;
-}
-
 ByteArray* Boards::get_x_board(int idx) const
 {
-	return get_board(_x_boards,idx);
+	//return get_board(_x_boards,idx);
+	return get_board(_boards[X_PLAYER],idx);
 }
 
 ByteArray* Boards::get_o_board(int idx) const
 {
-	return get_board(_o_boards,idx);
+	//return get_board(_o_boards,idx);
+	return get_board(_boards[O_PLAYER],idx);
 }
 
 ByteArray* Boards::get_taken_board(int idx) const
@@ -74,7 +77,7 @@ int Boards::get_cell_taken() const
 	return _empty_slots;
 }
 
-move_err_t Boards::player_move(move_t* move,
+move_err_e Boards::player_move(move_t* move,
 		bool take_back)
 {
 	return set_move(move,take_back);
@@ -83,8 +86,10 @@ move_err_t Boards::player_move(move_t* move,
 std::string Boards::to_string(unsigned space)
 {
 	std::string to_return = "";
-	std::string t_x_string = _x_boards->to_string();
-	std::string t_o_string = _o_boards->to_string();
+	//std::string t_x_string = _x_boards->to_string();
+	//std::string t_o_string = _o_boards->to_string();
+	std::string t_x_string = _boards[X_PLAYER]->to_string();
+	std::string t_o_string = _boards[O_PLAYER]->to_string();
 
 	unsigned row;
 
@@ -149,6 +154,19 @@ bool Boards::is_size_divisible(unsigned nob) const
 	return locate_offset(nob,0,0) == 0;
 }
 
+void Boards::overflow_handle(move_t* move, unsigned* byte, unsigned* offset)
+{
+	(*byte) = locate_board_start_idx(move->board); //starting BYTE idx
+	(*offset) = locate_offset(move->board,move->row,move->col); //bit to change offset from the beginning of BYTE
+
+	if ((*offset) >= BYTE_SIZE) //overflow handling
+	{
+		unsigned t_bytes_in_off = (*offset) / BYTE_SIZE; //how many BYTEs to jump ahead
+		(*byte) += t_bytes_in_off;
+		(*offset) -= t_bytes_in_off * BYTE_SIZE; //removing unneeded bits from calculation
+	}
+}
+
 unsigned Boards::locate_offset(unsigned board,unsigned row,unsigned col) const
 {
 	return _board_dim * row + 
@@ -161,16 +179,17 @@ unsigned Boards::locate_board_start_idx(unsigned board) const
 	return (_board_dim * _board_dim * board) / BYTE_SIZE;
 }
 
-move_err_t Boards::set_move(move_t* move,
+move_err_e Boards::set_move(move_t* move,
 		bool take_back)
 {
-	move_err_t to_return = ERR_OK;
+	move_err_e to_return = ERR_OK;
 	ByteArray* t_move_board = NULL;
 	
-	if (move->player == 1)
-		t_move_board = _x_boards;
+	if (move->player >= 0 && move->player < 2) //TODO const it
+		t_move_board = _boards[move->player];
+	/*	t_move_board = _x_boards;
 	else if (move->player == 0)
-		t_move_board = _o_boards;
+		t_move_board = _o_boards;*/
 
 	if (t_move_board != NULL)
 	{
@@ -180,15 +199,16 @@ move_err_t Boards::set_move(move_t* move,
 			{
 				if (move->col < _board_dim)
 				{
-					unsigned t_byte_start_idx = locate_board_start_idx(move->board); //starting BYTE idx
-					unsigned t_bit_to_change = locate_offset(move->board,move->row,move->col); //bit to change offset from the beginning of BYTE
+					unsigned t_byte_start_idx;// = locate_board_start_idx(move->board); //starting BYTE idx
+					unsigned t_bit_to_change;// = locate_offset(move->board,move->row,move->col); //bit to change offset from the beginning of BYTE
 
-					if (t_bit_to_change >= BYTE_SIZE) //overflow handling
+					/*if (t_bit_to_change >= BYTE_SIZE) //overflow handling
 					{
 						unsigned t_bytes_in_off = t_bit_to_change / BYTE_SIZE; //how many BYTEs to jump ahead
 						t_byte_start_idx += t_bytes_in_off;
 						t_bit_to_change -= t_bytes_in_off * BYTE_SIZE; //removing unneeded bits from calculation
-					}
+					}*/
+					overflow_handle(move,&t_byte_start_idx,&t_bit_to_change);
 
 					if (_taken->is_bit_off(t_byte_start_idx,t_bit_to_change)) //place not taken
 					{
@@ -221,6 +241,28 @@ move_err_t Boards::set_move(move_t* move,
 	}
 	else
 		to_return = ERR_START;
+
+	return to_return;
+}
+
+int Boards::whos_bit_on(move_t* move)
+{
+	int to_return = -1;
+	unsigned t_loop_byte;
+	unsigned t_loop_bit;
+
+	overflow_handle(move,&t_loop_byte,&t_loop_bit);
+	if (!_taken->is_bit_off(t_loop_byte,t_loop_bit)) //if bit on
+	{
+		if (_boards[CHANGE_PLAYER(move->player)]->is_bit_off(t_loop_byte,t_loop_bit)) //other player's bit is off => player's bit is on
+		{
+			to_return = move->player;
+		}
+		else //other player's bit is on
+		{
+			to_return = CHANGE_PLAYER(move->player);
+		}
+	} //else to_return = 0 but already initialized
 
 	return to_return;
 }

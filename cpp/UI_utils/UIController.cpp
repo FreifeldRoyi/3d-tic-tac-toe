@@ -10,6 +10,8 @@
 #include "../../hpp/UI_utils/UIController.hpp"
 #include <iostream>
 
+#include "../../hpp/AI_planning/CompStrategy.hpp"
+
 /*public*/
 
 UIController::UIController()
@@ -150,9 +152,9 @@ err_composition UIController::set_move(move_t* move)
 	return to_return;
 }
 
-victory_t UIController::is_end()
+victory_e UIController::is_end()
 {
-	victory_t to_return = VIC_CONT;
+	victory_e to_return = VIC_CONT;
 
 	if (_game_end)
 	{
@@ -171,6 +173,12 @@ void UIController::try_move(move_t* move)
 		_strat_arr[move->player]->print_board();
 
 		*move = _strat_arr[move->player]->apply_strategy();
+
+		//TODO delete from here
+		CompStrategy s = CompStrategy(_boards,move->player);
+		s.apply_strategy(move);
+		//TODO end delete
+
 		err = set_move(move);
 
 		_strat_arr[move->player]->print_board();

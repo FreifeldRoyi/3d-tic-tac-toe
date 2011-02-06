@@ -3,9 +3,7 @@
 
 #include "ByteArray.hpp"
 
-#define ON_LEFT_RIGHT_DIAG(board,dim,row,col) ((row) == (col))
-#define ON_RIGHT_LEFT_DIAG(board,dim,row,col) ((row) + (col) == ((dim) - 1))
-#define BOARD_SPREAD(board,dim,row,col) ((row) == (board))
+#define IN_RANGE(idx,upper_bound) (((idx) >= 0) && ((idx) < (upper_bound)))
 
 class Boards
 {
@@ -13,22 +11,36 @@ class Boards
 		unsigned _num_of_boards;
 		unsigned _board_dim;
 
-		double _static_heuristic; //static heuritic function
 		int _empty_slots; //empty slots left on the board
 
-		ByteArray* _x_boards;
-		ByteArray* _o_boards;
+		ByteArray* _boards[2]; //TODO maybe make 2 a const
+		//ByteArray* _x_boards;
+		//ByteArray* _o_boards;
 		ByteArray* _taken;
 
-		unsigned _space_per_cell; //defaults to 3. number of chars in a cell
+		unsigned _space_per_cell; //defaults to 3. number of chars in a cell used for to_string
 
 		ByteArray* get_board(ByteArray* ba, int idx) const;
 		
+		/**
+		 * calculating board start byte and bit to change offset,
+		 * offset is relative to board start byte
+		 * returns the actual byte and offset from that byte of the bit
+		 *
+		 * /param move - the move to be carried
+		 * /param byte - output parameter
+		 * /param offset - output parameter
+		 */
+		void overflow_handle(move_t* move, unsigned* byte, unsigned* offset);
+
 		/* locate the byte in which the board appears for the first time
-		 * NOTE: board idx here starts with 0 and not 1 as in set_move
 		 */
 		unsigned locate_board_start_idx(unsigned board) const;
 
+		/**
+		 * returns the offset of the bit representing the slot given (board,row,col)
+		 * bit offset is relative to the board start byte
+		 */
 		unsigned locate_offset(unsigned board,unsigned row,unsigned col) const;
 
 		/**
@@ -65,54 +77,8 @@ class Boards
 		 * /param col - col number
 		 * /param take_back - undo last move
 		 */
-		move_err_t set_move(move_t* move,
+		move_err_e set_move(move_t* move,
 				bool take_back);
-
-		/**
-		 * TODO
-		 */
-		int single_board_row_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int single_board_col_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int single_board_diag_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int multi_board_row_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int multi_board_col_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int multi_board_diag_count(move_t* move);
-
-		/**
-		 * TODO
-		 */
-		int multi_board_pierce_col_count(move_t* move);
-
-		/** TODO
-		 * calculates the new static heuristic value after
-		 * the move given as a parameter
-		 *
-		 * /param player - the player idx
-		 * /param board - the board idx
-		 * /param row - the row idx
-		 * /param col - the column idx
-		 */
-		double calc_hueristic(move_t* move);
 
 		/*******to_string helper functions*******/
 
@@ -149,14 +115,18 @@ class Boards
 		unsigned get_num_of_boards() const;
 		unsigned get_board_dim() const;
 
-		double get_heuristic_value() const;
+		/**
+		 * returns the player whos bit is on
+		 * or a negative number otherwise
+		 */
+		int whos_bit_on(move_t* move);
 
 		/* returns a copy of the board
-		 * if board with number num is unavailable NULL is returned
-		 * if num < 0 returns a copy of all board array
-		 * if num = 0 returns NULL
-		 * if 0 < num <= _num_of_boards returns the num-ith board
-		 * if num > _num_of_boards returns NULL
+		 * if board with number idx is unavailable NULL is returned
+		 * if idx < 0 returns a copy of all board array
+		 * if idx = 0 returns NULL
+		 * if 0 < idx <= _num_of_boards returns the idx-ith board
+		 * if idx > _num_of_boards returns NULL
 		 *
 		 * /param idx - index of board to return
 		 */
@@ -166,7 +136,7 @@ class Boards
 
 		int get_cell_taken() const;
 
-		move_err_t player_move(move_t* move,
+		move_err_e player_move(move_t* move,
 				bool take_back);
 
 		std::string to_string(unsigned space = 0);

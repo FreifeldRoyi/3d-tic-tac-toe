@@ -47,7 +47,7 @@ class UIController
 		/**
 		 * checks if the game ended after the last move
 		 */
-		victory_t is_end();
+		victory_e is_end();
 
 		/**
 		 * Will apply strategy s until it's a valid one

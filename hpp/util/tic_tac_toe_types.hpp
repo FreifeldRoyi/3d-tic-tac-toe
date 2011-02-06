@@ -23,7 +23,7 @@
 typedef unsigned char BYTE;
 #define BYTE_SIZE (sizeof(BYTE) * 8)
 
-enum move_err_t
+enum move_err_e
 {
 	ERR_OK = 0, //move was ok
 	ERR_START = 1, //game wasn't initialized
@@ -35,7 +35,7 @@ enum move_err_t
 
 typedef unsigned err_composition;
 
-enum victory_t
+enum victory_e
 {
 	VIC_X, //X player has won
 	VIC_O, //O player has won
@@ -55,9 +55,44 @@ typedef struct _move_t
 	unsigned col;
 } move_t;
 
+typedef struct _direction_t
+{
+	int brd_dir;
+	int row_dir;
+	int col_dir;
+} direction_t;
+
+enum direction_e
+{
+	/**
+	 * used in order to decide in which direction the
+	 * counting progresses where:
+	 * SNGL refers to a direction on a single board
+	 * MULT refers to a direction crossing several boards
+	 * U,D is row-wise oriented
+	 * T,B is board-wise oriented
+	 * L,R is column-wise oriented
+	 */
+	DIR_SNGL_ROW = 0,
+	DIR_SNGL_COL = 1,
+	DIR_SNGL_DIAG_UL_DR = 2,
+	DIR_SNGL_DIAG_UR_DL = 3,
+	DIR_MULT_ROW_TL_BR = 4,
+	DIR_MULT_ROW_TR_BL = 5,
+	DIR_MULT_COL_TU_BD = 6,
+	DIR_MULT_COL_TD_BU = 7,
+	DIR_MULT_DIAG_TUR_BDL = 8,
+	DIR_MULT_DIAG_TUL_BDR = 9,
+	DIR_MULT_DIAG_TDL_BUR = 10,
+	DIR_MULT_DIAG_TDR_BUL = 11,
+	DIR_MULT_PIERCE = 12,
+
+	NUMBER_OF_DIRECTIONS
+};
+
 /* logic operations */
-#define and_op(num1,num2) (num1 & num2)
-#define or_op(num1,num2) (num1 | num2)
-#define bitwise_not(num) (~num)
+#define and_op(num1,num2) ((num1) & (num2))
+#define or_op(num1,num2) ((num1) | (num2))
+#define bitwise_not(num) (~(num))
 
 #endif //TIC_TAC_TOE_TYPES_HPP

@@ -6,20 +6,35 @@
  */
 #include "../../hpp/AI_planning/CompStrategy.hpp"
 #include <malloc.h>
+#include <math.h>
+
+//TODO delete later
+#include <iostream>
+using namespace std;
+//TODO end delete
 
 CompStrategy::CompStrategy(Boards* board, unsigned player,int look_ahead) : _look_ahead(look_ahead)
 {
 	_board = board;
 	_player = player;
+	_directions = init_directions();
 }
 
-CompStrategy::~CompStrategy() {}
+CompStrategy::~CompStrategy()
+{
+	destroy_directions(_directions);
+}
 
 void CompStrategy::print_board() {}
 
-void CompStrategy::apply_strategy(Boards& board, move_t* move)
+void CompStrategy::apply_strategy(move_t* move)
 {
-	//TODO
+	cout << "static heuristic value is: " << calc_hueristic(move) << endl;
+}
+
+move_t CompStrategy::apply_strategy()
+{
+
 }
 
 /*private*/
@@ -35,7 +50,193 @@ board_tree_t* CompStrategy::generate_tree(Boards* board,
 {
 	board_tree_t* to_return = create_tree_node(board);
 
+	//TODO
 
+	return to_return;
+}
+
+void CompStrategy::count_direction(move_t cur_idx,
+		direction_t* dir,
+		int* player_count,
+		int* opp_count) //TODO make recursive!
+{
+	/*int brd_idx = cur_idx->board;
+	int row_idx = cur_idx->row;
+	int col_idx = cur_idx->col;
+
+	if (brd_dir != 0 || row_dir != 0 || col_dir != 0) // if all params = 0 no need to check
+	{
+		for (brd_idx += brd_dir;
+				IN_RANGE(col_idx,static_cast<int>(_board_dim))&&
+				IN_RANGE(row_idx,static_cast<int>(_board_dim)) &&
+				IN_RANGE(brd_idx,static_cast<int>(_board_dim));
+				brd_idx += brd_dir)
+		{
+			for (row_idx += row_dir;
+					IN_RANGE(col_idx,static_cast<int>(_board_dim))&&
+					IN_RANGE(row_idx,static_cast<int>(_board_dim));
+					row_idx += row_dir)
+			{
+				for (col_idx += col_dir;
+						col_dir != 0 &&
+						IN_RANGE(col_idx,static_cast<int>(_board_dim));
+						col_idx += col_dir)
+				{
+					move_t t_loop_move = {cur_idx->player, brd_idx, row_idx, col_idx};
+					int player = whos_bit_on(&t_loop_move);
+					if (player == static_cast<int>(t_loop_move.player))
+					{
+						++(*player_count);
+					}
+					else if (CHANGE_PLAYER(static_cast<int>(t_loop_move.player)) == player)
+					{
+						++(*opp_count);
+					}
+					else {} //bit is off
+				}
+			}
+		}
+	}*/
+
+	if (dir->brd_dir != 0 || dir->row_dir != 0 || dir->col_dir != 0)
+	{
+		if (IN_RANGE(cur_idx.row,_board->get_board_dim()) &&
+				IN_RANGE(cur_idx.col,_board->get_board_dim()) &&
+				IN_RANGE(cur_idx.board,_board->get_board_dim()))
+		{
+			int player = _board->whos_bit_on(&cur_idx);
+			if (player == static_cast<int>(cur_idx.player))
+			{
+				++(*player_count);
+			}
+			else if (CHANGE_PLAYER(static_cast<int>(cur_idx.player)) == player)
+			{
+				++(*opp_count);
+			}
+			else {} //bit is off
+
+			cur_idx.row += dir->row_dir;
+			cur_idx.col += dir->col_dir;
+			cur_idx.board += dir->brd_dir;
+			count_direction(cur_idx,dir,player_count,opp_count);
+		}
+	}
+}
+
+void CompStrategy::apply_direction_count(move_t* cur_idx,
+		direction_e dir,
+		int* player_count,
+		int* opp_count)
+{
+	if (dir_conditions(cur_idx,dir))
+	{
+		direction_t t_dir = _directions[dir];
+		count_direction(*cur_idx,&t_dir,player_count,opp_count);
+
+		t_dir.brd_dir = -t_dir.brd_dir;
+		t_dir.row_dir = -t_dir.row_dir;
+		t_dir.col_dir = -t_dir.col_dir;
+		count_direction(*cur_idx,&t_dir,player_count,opp_count);
+	}
+}
+
+bool CompStrategy::dir_conditions(move_t* move, direction_e dir) const
+{
+	bool to_return;
+
+	switch (dir)
+	{
+		case (DIR_SNGL_ROW):
+			to_return = true;
+			break;
+
+		case (DIR_SNGL_COL):
+			to_return = true;
+			break;
+
+		case (DIR_SNGL_DIAG_UL_DR):
+			to_return = move->row == move->col;
+			break;
+
+		case (DIR_SNGL_DIAG_UR_DL):
+			to_return = move->row + move->col == _board->get_board_dim() - 1;
+			break;
+
+		case (DIR_MULT_ROW_TL_BR):
+			to_return = move->col == move->board;
+			break;
+
+		case (DIR_MULT_ROW_TR_BL):
+			to_return = move->board == _board->get_board_dim() - 1 - move->col;
+			break;
+
+		case (DIR_MULT_COL_TU_BD):
+			to_return = move->row == move->board;
+			break;
+
+		case (DIR_MULT_COL_TD_BU):
+			to_return = move->board == _board->get_board_dim() - 1 - move->row;
+			break;
+
+		case (DIR_MULT_DIAG_TUR_BDL):
+			to_return = move->row + move->col == _board->get_board_dim() - 1 && move->row == move->board;
+			break;
+
+		case (DIR_MULT_DIAG_TUL_BDR):
+			to_return = move->row == move->col && move->board == move->row;
+			break;
+
+		case (DIR_MULT_DIAG_TDL_BUR):
+			to_return = move->row + move->col == _board->get_board_dim() - 1 && move->board == move->col;
+			break;
+
+		case (DIR_MULT_DIAG_TDR_BUL):
+			to_return = move->row == move->col && move->board == _board->get_board_dim() - 1 - move->row;
+			break;
+
+		case (DIR_MULT_PIERCE):
+			to_return = true;
+			break;
+
+		default:
+			to_return = false;
+	}
+
+	return to_return;
+}
+
+double CompStrategy::calc_hueristic(move_t* move)
+{
+	double to_return = 0;
+	int second_power = 1;
+	int player_lines[_board->get_board_dim()];
+	int opp_lines[_board->get_board_dim()];
+
+	int player_count;
+	int opp_count;
+
+	for (int i = 0; i < static_cast<int>(_board->get_board_dim()); ++i)
+	{
+		player_lines[i] = 0;
+		opp_lines[i] = 0;
+	}
+
+	for (int dir = DIR_SNGL_ROW; dir < NUMBER_OF_DIRECTIONS; ++dir)
+	{
+		player_count = 0;
+		opp_count = 0;
+
+		apply_direction_count(move,(direction_e)dir,&player_count,&opp_count);
+		++player_lines[player_count];
+		++opp_lines[opp_count];
+	}
+
+	to_return += player_lines[0] - opp_lines[0];
+	for (int i = 1; i < static_cast<int>(_board->get_board_dim()); ++i)
+	{
+		to_return += pow10(second_power) * (player_lines[i] - opp_lines[i]);
+		second_power *= 2;
+	}
 
 	return to_return;
 }
