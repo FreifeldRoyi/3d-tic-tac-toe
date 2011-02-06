@@ -60,44 +60,6 @@ void CompStrategy::count_direction(move_t cur_idx,
 		int* player_count,
 		int* opp_count) //TODO make recursive!
 {
-	/*int brd_idx = cur_idx->board;
-	int row_idx = cur_idx->row;
-	int col_idx = cur_idx->col;
-
-	if (brd_dir != 0 || row_dir != 0 || col_dir != 0) // if all params = 0 no need to check
-	{
-		for (brd_idx += brd_dir;
-				IN_RANGE(col_idx,static_cast<int>(_board_dim))&&
-				IN_RANGE(row_idx,static_cast<int>(_board_dim)) &&
-				IN_RANGE(brd_idx,static_cast<int>(_board_dim));
-				brd_idx += brd_dir)
-		{
-			for (row_idx += row_dir;
-					IN_RANGE(col_idx,static_cast<int>(_board_dim))&&
-					IN_RANGE(row_idx,static_cast<int>(_board_dim));
-					row_idx += row_dir)
-			{
-				for (col_idx += col_dir;
-						col_dir != 0 &&
-						IN_RANGE(col_idx,static_cast<int>(_board_dim));
-						col_idx += col_dir)
-				{
-					move_t t_loop_move = {cur_idx->player, brd_idx, row_idx, col_idx};
-					int player = whos_bit_on(&t_loop_move);
-					if (player == static_cast<int>(t_loop_move.player))
-					{
-						++(*player_count);
-					}
-					else if (CHANGE_PLAYER(static_cast<int>(t_loop_move.player)) == player)
-					{
-						++(*opp_count);
-					}
-					else {} //bit is off
-				}
-			}
-		}
-	}*/
-
 	if (dir->brd_dir != 0 || dir->row_dir != 0 || dir->col_dir != 0)
 	{
 		if (IN_RANGE(cur_idx.row,_board->get_board_dim()) &&
