@@ -94,6 +94,19 @@ void destroy_directions(direction_t* dir)
 	delete dir;
 }
 
+std::string player_string(unsigned player)
+{
+	char* to_return;
+	if (player == X_PLAYER)
+		to_return = "X Player";
+	else if (player == O_PLAYER)
+		to_return = "O Player";
+	else
+		to_return = "???";
+
+	return to_return;
+}
+
 err_composition compose_errors(err_composition e1, err_composition e2)
 {
 	return or_op(e1,e2);

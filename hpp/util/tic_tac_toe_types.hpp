@@ -10,7 +10,6 @@
 
 #define X_PLAYER 1
 #define O_PLAYER 0
-#define PLAYER_ARR {O_PLAYER,X_PLAYER}
 #define CHANGE_PLAYER(player) (1 - (player))
 
 #define BIT_ON 1

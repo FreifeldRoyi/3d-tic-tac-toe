@@ -8,15 +8,16 @@
 //TODO maybe later use this as a Facade to the data structures and create another controller for "game use"
 
 #include "../../hpp/UI_utils/UIController.hpp"
-#include <iostream>
+#include <cstdlib>
+#include <time.h>
 
-#include "../../hpp/AI_planning/CompStrategy.hpp"
+#include <iostream>
 
 /*public*/
 
 UIController::UIController()
 {
-	_moves = new list<move_t>();
+	_moves = new std::list<move_t>();
 	_boards = NULL;
 	_strat_arr[O_PLAYER] = NULL;
 	_strat_arr[X_PLAYER] = NULL;
@@ -28,16 +29,6 @@ UIController::~UIController()
 	reset();
 	delete _moves;
 }
-
-/*err_composition UIController::set_o(int board_num,int row, int col)
-{
-	return set_move(O_PLAYER,board_num,row,col);
-}
-
-err_composition UIController::set_x(int board_num,int row, int col)
-{
-	return set_move(X_PLAYER,board_num,row,col);
-}*/
 
 void UIController::take_back()
 {
@@ -55,27 +46,21 @@ void UIController::init_game(int board_dim, bool full_game)
 		_boards = new Boards(1,board_dim);
 }
 
-void UIController::play_1P_VS_COMP()
-{
-	std::cout << "1P VS Comp feature is not done yet\n" << std::endl;
-	//TODO 1P VS COMP
-}
-
-void UIController::play_1P_VS_2P()
+void UIController::input_game_settings()
 {
 	int dim;
 	char full_game;
 
 	do
 	{
-		std::cout << "please enter board dim where: 2 < dim < 10: ";
+		std::cout << "Please enter board dim where: 2 < dim < 10: ";
 		std::cin >> dim;
 
 	} while (dim < 2 || dim > 10);
 
 	do
 	{
-		std::cout << "do you want a full 3D game? [y/n]: ";
+		std::cout << "Do you want a full 3D game? [y/n]: ";
 		std::cin >> full_game;
 
 	} while (full_game != 'y' &&
@@ -87,6 +72,43 @@ void UIController::play_1P_VS_2P()
 		init_game(dim,true);
 	else
 		init_game(dim,false);
+}
+
+int UIController::input_computer_settings(std::string name)
+{
+	int to_return;
+
+	do
+	{
+		//TODO  after submission can be changed to "HARD,MEDIUM and EASY"
+		std::cout << "Please enter " << name << " MiniMax depth where: depth > 1: ";
+		std::cin >> to_return;
+	} while (to_return < 1);
+
+	return to_return;
+}
+
+void UIController::play_1P_VS_COMP()
+{
+	input_game_settings();
+
+	srand(time(NULL));
+	int comp_piece = rand() % 2;
+
+	int look_ahead = input_computer_settings();
+
+	_strat_arr[comp_piece] = new CompStrategy(_boards, comp_piece, look_ahead);
+	_strat_arr[CHANGE_PLAYER(comp_piece)] = new HumanStrategy(_boards,CHANGE_PLAYER(comp_piece));
+
+	std::cout << "1P is " << player_string(CHANGE_PLAYER(comp_piece)) << std::endl;
+	std::cout << "Computer is " << player_string(comp_piece) << std::endl;
+
+	play();
+}
+
+void UIController::play_1P_VS_2P()
+{
+	input_game_settings();
 
 	_strat_arr[O_PLAYER] = new HumanStrategy(_boards,O_PLAYER);
 	_strat_arr[X_PLAYER] = new HumanStrategy(_boards,X_PLAYER);
@@ -96,8 +118,15 @@ void UIController::play_1P_VS_2P()
 
 void UIController::play_COMP_VS_COMP()
 {
-	std::cout << "COMP VS Comp feature is not done yet\n" << std::endl;
-	//TODO COMP VS COMP
+	input_game_settings();
+
+	int look_ahead_o = input_computer_settings(player_string(O_PLAYER));
+	int look_ahead_x = input_computer_settings(player_string(X_PLAYER));
+
+	_strat_arr[O_PLAYER] = new CompStrategy(_boards, O_PLAYER, look_ahead_o);
+	_strat_arr[X_PLAYER] = new CompStrategy(_boards, X_PLAYER, look_ahead_x);
+
+	play();
 }
 
 std::string UIController::to_string(unsigned scale)
@@ -158,7 +187,7 @@ victory_e UIController::is_end()
 
 	if (_game_end)
 	{
-		//TODO check who is the winner
+		to_return = VIC_DRAW; //TODO check who is the winner. now is just for ending the game
 	}
 
 	return to_return;
@@ -175,8 +204,8 @@ void UIController::try_move(move_t* move)
 		*move = _strat_arr[move->player]->apply_strategy();
 
 		//TODO delete from here
-		CompStrategy s = CompStrategy(_boards,move->player);
-		s.apply_strategy(move);
+		//CompStrategy s = CompStrategy(_boards,move->player);
+		//s.apply_strategy(move);
 		//TODO end delete
 
 		err = set_move(move);

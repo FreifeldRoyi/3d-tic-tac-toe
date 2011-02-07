@@ -2,6 +2,7 @@
 #define APP_UTIL_HPP
 
 #include "tic_tac_toe_types.hpp"
+#include <string>
 
 /*prints the BYTE in a binary fashion*/
 void print_binary_BYTE(BYTE* byte);
@@ -21,6 +22,8 @@ move_t* allocate_move();
 void set_dir_vals(direction_t* dir, int brd_dir, int row_dir, int col_dir);
 direction_t* init_directions();
 void destroy_directions(direction_t* dir);
+
+std::string player_string(unsigned player);
 
 err_composition compose_errors(err_composition e1, err_composition e2);
 

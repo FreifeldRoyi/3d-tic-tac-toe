@@ -23,12 +23,7 @@ void HumanStrategy::print_board()
 move_t HumanStrategy::apply_strategy()
 {
 	move_t to_return;
-	std::string player_name;
-
-	if (_player == X_PLAYER)
-		player_name = "X Player";
-	else
-		player_name = "O Player";
+	std::string player_name = player_string(_player);
 
 	to_return.player = _player;
 

@@ -80,6 +80,8 @@ class Boards
 		move_err_e set_move(move_t* move,
 				bool take_back);
 
+		void dec_empty_slots();
+
 		/*******to_string helper functions*******/
 
 		void cat_board_numbers(std::string& str);
