@@ -1,4 +1,4 @@
-/**
+/**er
  * This header files contains some type definitions and basic operations needed for my project
  */
 
@@ -8,9 +8,15 @@
 #define LSB_ONE 1
 #define LSB_ZERO 254
 
-#define X_PLAYER 1
-#define O_PLAYER 0
-#define CHANGE_PLAYER(player) (1 - (player))
+enum player_e
+{
+	O_PLAYER = 0,
+	X_PLAYER = 1,
+
+	NUM_OF_PLAYERS = 2
+};
+
+#define CHANGE_PLAYER(player) static_cast<player_e>((1 - (player)))
 
 #define BIT_ON 1
 #define BIT_OFF 0
@@ -48,46 +54,11 @@ enum victory_e
  */
 typedef struct _move_t
 {
-	unsigned player;
+	player_e player;
 	unsigned board;
 	unsigned row;
 	unsigned col;
 } move_t;
-
-typedef struct _direction_t
-{
-	int brd_dir;
-	int row_dir;
-	int col_dir;
-} direction_t;
-
-enum direction_e
-{
-	/**
-	 * used in order to decide in which direction the
-	 * counting progresses where:
-	 * SNGL refers to a direction on a single board
-	 * MULT refers to a direction crossing several boards
-	 * U,D is row-wise oriented
-	 * T,B is board-wise oriented
-	 * L,R is column-wise oriented
-	 */
-	DIR_SNGL_ROW = 0,
-	DIR_SNGL_COL = 1,
-	DIR_SNGL_DIAG_UL_DR = 2,
-	DIR_SNGL_DIAG_UR_DL = 3,
-	DIR_MULT_ROW_TL_BR = 4,
-	DIR_MULT_ROW_TR_BL = 5,
-	DIR_MULT_COL_TU_BD = 6,
-	DIR_MULT_COL_TD_BU = 7,
-	DIR_MULT_DIAG_TUR_BDL = 8,
-	DIR_MULT_DIAG_TUL_BDR = 9,
-	DIR_MULT_DIAG_TDL_BUR = 10,
-	DIR_MULT_DIAG_TDR_BUL = 11,
-	DIR_MULT_PIERCE = 12,
-
-	NUMBER_OF_DIRECTIONS
-};
 
 /* logic operations */
 #define and_op(num1,num2) ((num1) & (num2))

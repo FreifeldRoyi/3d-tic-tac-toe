@@ -18,7 +18,7 @@ class UIController
 	private:
 		Boards* _boards;
 		std::list<move_t>* _moves; //moves
-		Strategy* _strat_arr[2]; //TODO change to a const???
+		Strategy* _strat_arr[NUM_OF_PLAYERS];
 		bool _game_end;
 
 		/**

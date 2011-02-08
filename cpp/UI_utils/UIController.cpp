@@ -93,7 +93,7 @@ void UIController::play_1P_VS_COMP()
 	input_game_settings();
 
 	srand(time(NULL));
-	int comp_piece = rand() % 2;
+	player_e comp_piece = static_cast<player_e>(rand() % 2);
 
 	int look_ahead = input_computer_settings();
 
@@ -201,12 +201,7 @@ void UIController::try_move(move_t* move)
 	{
 		_strat_arr[move->player]->print_board();
 
-		*move = _strat_arr[move->player]->apply_strategy();
-
-		//TODO delete from here
-		//CompStrategy s = CompStrategy(_boards,move->player);
-		//s.apply_strategy(move);
-		//TODO end delete
+		_strat_arr[move->player]->apply_strategy(move);
 
 		err = set_move(move);
 

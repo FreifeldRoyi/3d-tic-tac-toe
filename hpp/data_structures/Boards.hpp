@@ -13,9 +13,7 @@ class Boards
 
 		int _empty_slots; //empty slots left on the board
 
-		ByteArray* _boards[2]; //TODO maybe make 2 a const
-		//ByteArray* _x_boards;
-		//ByteArray* _o_boards;
+		ByteArray* _boards[NUM_OF_PLAYERS];
 		ByteArray* _taken;
 
 		unsigned _space_per_cell; //defaults to 3. number of chars in a cell used for to_string
@@ -71,10 +69,7 @@ class Boards
 		 * - row, col, board are within range
 		 * - place requested is not taken
 		 *
-		 * /param player - player number where 1 is X and 0 is O
-		 * /param board - board number
-		 * /param row - row number
-		 * /param col - col number
+		 * /param move - the move
 		 * /param take_back - undo last move
 		 */
 		move_err_e set_move(move_t* move,
@@ -121,7 +116,7 @@ class Boards
 		 * returns the player whos bit is on
 		 * or a negative number otherwise
 		 */
-		int whos_bit_on(move_t* move);
+		player_e whos_bit_on(move_t* move);
 
 		/* returns a copy of the board
 		 * if board with number idx is unavailable NULL is returned

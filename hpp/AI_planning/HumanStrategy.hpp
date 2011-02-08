@@ -13,11 +13,11 @@
 class HumanStrategy : public Strategy
 {
 	public:
-		HumanStrategy(Boards* brd, unsigned player);
+		HumanStrategy(Boards* brd, player_e player);
 		~HumanStrategy();
 
 		void print_board();
-		move_t apply_strategy();
+		void apply_strategy(move_t* move);
 };
 
 #endif /* HUMANSTRATEGY_HPP_ */

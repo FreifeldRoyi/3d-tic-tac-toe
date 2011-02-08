@@ -176,7 +176,7 @@ move_err_e Boards::set_move(move_t* move,
 	move_err_e to_return = ERR_OK;
 	ByteArray* t_move_board = NULL;
 	
-	if (move->player >= 0 && move->player < 2) //TODO const it
+	if (move->player >= 0 && move->player < NUM_OF_PLAYERS)
 		t_move_board = _boards[move->player];
 
 	if (t_move_board != NULL)
@@ -232,9 +232,9 @@ void Boards::dec_empty_slots()
 	--_empty_slots;
 }
 
-int Boards::whos_bit_on(move_t* move)
+player_e Boards::whos_bit_on(move_t* move)
 {
-	int to_return = -1;
+	player_e to_return = NUM_OF_PLAYERS;
 	unsigned t_loop_byte;
 	unsigned t_loop_bit;
 

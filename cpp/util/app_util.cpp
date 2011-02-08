@@ -94,9 +94,9 @@ void destroy_directions(direction_t* dir)
 	delete dir;
 }
 
-std::string player_string(unsigned player)
+std::string player_string(player_e player)
 {
-	char* to_return;
+	std::string to_return;
 	if (player == X_PLAYER)
 		to_return = "X Player";
 	else if (player == O_PLAYER)
