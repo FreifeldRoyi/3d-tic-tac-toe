@@ -43,7 +43,7 @@ void Minimax::best_move(Boards* cur_brd, player_e player, move_t* move)
 			break;
 	};
 
-	cpy_move(&t_top_node->best_move,move);
+	//cpy_move(&t_top_node->best_move,move);
 }
 
 /*private*/

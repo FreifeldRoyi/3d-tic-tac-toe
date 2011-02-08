@@ -2,7 +2,6 @@
 #define APP_UTIL_HPP
 
 #include "tic_tac_toe_types.hpp"
-#include "AI_types.hpp"
 #include <string>
 
 /*prints the BYTE in a binary fashion*/
