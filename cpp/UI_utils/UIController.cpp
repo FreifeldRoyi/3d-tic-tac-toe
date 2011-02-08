@@ -21,7 +21,7 @@ UIController::UIController()
 	_boards = NULL;
 	_strat_arr[O_PLAYER] = NULL;
 	_strat_arr[X_PLAYER] = NULL;
-	_game_end = false;
+	_game_end = VIC_CONT;
 }
 
 UIController::~UIController()
@@ -156,7 +156,7 @@ void UIController::reset()
 	}
 
 	_moves->erase(_moves->begin(),_moves->end());
-	_game_end = false;
+	_game_end = VIC_CONT;
 }
 
 void UIController::push_move(move_t* move)
@@ -171,6 +171,16 @@ void UIController::push_move(move_t* move)
 	_moves->push_back(p);
 }
 
+void UIController::last_move(move_t* move)
+{
+	move_t t_last_move = _moves->back();
+
+	move->player = t_last_move.player;
+	move->board = t_last_move.board;
+	move->row = t_last_move.row;
+	move->col = t_last_move.col;
+}
+
 err_composition UIController::set_move(move_t* move)
 {
 	err_composition to_return = _boards->player_move(move,false);
@@ -181,14 +191,16 @@ err_composition UIController::set_move(move_t* move)
 	return to_return;
 }
 
-victory_e UIController::is_end()
+bool UIController::is_end()
 {
-	victory_e to_return = VIC_CONT;
+	bool to_return = false;
 
-	if (_game_end)
-	{
-		to_return = VIC_DRAW; //TODO check who is the winner. now is just for ending the game
-	}
+	//move_t t_last_move;
+	//last_move(&t_last_move);
+
+
+	//TODO end game check maybe add counting in Boards... needs more thinking
+
 
 	return to_return;
 }
@@ -224,5 +236,5 @@ void UIController::play()
 		try_move(&move);
 		move.player = CHANGE_PLAYER(move.player);
 
-	} while (is_end() == VIC_CONT);
+	} while (!is_end());
 }

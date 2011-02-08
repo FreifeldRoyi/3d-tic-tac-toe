@@ -9,34 +9,44 @@
 #define MINIMAX_HPP_
 
 #include "../data_structures/Boards.hpp"
-#include "../util/AI_types.hpp"
+
+#include <list>
 
 class Minimax
 {
-	struct _tree_node_t
+	struct _node_data_t
 	{
 		Boards* current; //current board state
 		double value;
 
-		struct _tree_node_t* father;
-		struct _tree_node_t* next_brother;
-		struct _tree_node_t* ex_children; //expanded children array
+		struct _node_data_t* father;
+		struct _node_data_t* brother;
+		struct _node_data_t* first_child; //expanded children array
+		struct _node_data_t* last_child;
+		int num_ex_child;
 
-		move_t* unex_children; //unexpanded
-		move_t* best_move; //the best move returned by the recursion
+		std::list<move_t*>* unex_children; //unexpanded
 
 		//NOTE: number of children will be the number of empty slots in current
-	} tree_node_t;
+	} node_data_t;
+
+
 
 	private:
 		int _num_of_ply; // holds the number of steps that the minimax tree needs to look ahead
+		player_e _player;
 		direction_t* _directions;
 
+
+		struct _node_data_t* generate_top_node(Boards* board);
+		void generate_child(struct _node_data_t* father);
 		/**
 		 * creates a single node of the tree
 		 * /param brd - the state of the board
 		 */
-		struct _tree_node_t* create_tree_node(Boards* brd);
+		struct _node_data_t* create_tree_node();
+		void destroy_tree_node(struct _node_data_t* node);
+
 
 		/**
 		 * counts elements according to
@@ -90,13 +100,23 @@ class Minimax
 		 */
 		double calc_hueristic(Boards* board, move_t* move);
 
+		double do_maximin(struct _node_data_t* node, double alpha, double beta, int depth);
+		double do_minimax(struct _node_data_t* node, double alpha, double beta, int depth);
+
 	public:
-		Minimax(int num_of_ply = 4);
+		Minimax(player_e player, int num_of_ply = 4);
 		~Minimax();
 
 		void set_num_of_ply(int nop);
 
-		move_t* best_move(Boards* cur_brd, player_e pl);
+		/**
+		 * calculates the best move
+		 *
+		 * /param cur_brd - the current board state
+		 * /param player - the player to make the move
+		 * /param move - output parameter
+		 */
+		void best_move(Boards* cur_brd, player_e player, move_t* move);
 };
 
 #endif /* MINIMAX_HPP_ */

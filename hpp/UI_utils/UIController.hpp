@@ -19,7 +19,7 @@ class UIController
 		Boards* _boards;
 		std::list<move_t>* _moves; //moves
 		Strategy* _strat_arr[NUM_OF_PLAYERS];
-		bool _game_end;
+		victory_e _game_end;
 
 		/**
 		 * resets data structures
@@ -34,13 +34,19 @@ class UIController
 		 * insert new move to _moves
 		 */
 		void push_move(move_t* move);
+		/**
+		 * access last move
+		 *
+		 * /param move - output parameter
+		 */
+		void last_move(move_t* move);
 
 		err_composition set_move(move_t* move);
 
 		/**
 		 * checks if the game ended after the last move
 		 */
-		victory_e is_end();
+		bool is_end();
 
 		/**
 		 * Will apply strategy s until it's a valid one

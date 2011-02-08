@@ -14,7 +14,7 @@
 class CompStrategy : public Strategy
 {
 	private:
-		Minimax _tree;
+		Minimax _minimax;
 
 	public:
 		CompStrategy(Boards* board, player_e player, int look_ahead = 4); //according to assay

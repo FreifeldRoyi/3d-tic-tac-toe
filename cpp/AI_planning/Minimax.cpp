@@ -7,8 +7,10 @@
 
 #include "../../hpp/AI_planning/Minimax.hpp"
 #include <math.h>
+#include <malloc.h>
+#include <limits>
 
-Minimax::Minimax(int num_of_ply) : _num_of_ply(num_of_ply)
+Minimax::Minimax(player_e player, int num_of_ply) : _num_of_ply(num_of_ply), _player(player)
 {
 	_directions = init_directions();
 }
@@ -23,18 +25,104 @@ void Minimax::set_num_of_ply(int nop)
 	_num_of_ply = nop;
 }
 
-move_t* Minimax::best_move(Boards* cur_brd, player_e pl)
+void Minimax::best_move(Boards* cur_brd, player_e player, move_t* move)
 {
-	//TODO
+	struct _node_data_t* t_top_node = generate_top_node(cur_brd);
+	switch (player)
+	{
+		case (O_PLAYER): //minimizer
+			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			break;
+
+		case (X_PLAYER): //maximizer
+			do_maximin(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			break;
+
+		default:
+			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			break;
+	};
+
+	cpy_move(&t_top_node->best_move,move);
 }
 
 /*private*/
 
-Minimax::_tree_node_t* Minimax::create_tree_node(Boards* brd)
+Minimax::_node_data_t* Minimax::generate_top_node(Boards* board)
 {
+	struct _node_data_t* to_return = create_tree_node();
 
+	to_return->current = new Boards(*board);
+	to_return->unex_children = board->possible_moves(_player);
+
+	return to_return;
 }
 
+void Minimax::generate_child(struct _node_data_t* father)
+{
+	struct _node_data_t* to_add = create_tree_node();
+
+	Boards* board = new Boards(*(father->current));
+
+	move_t* t_mv = father->unex_children->front(); //TODO refactor later //access child move
+	board->player_move(t_mv,false);
+
+	to_add->current = board;
+	to_add->value = calc_hueristic(father->current,t_mv);
+	to_add->unex_children = board->possible_moves(CHANGE_PLAYER(t_mv->player)); //child moves will be opponent's moves
+
+	if (father->last_child == NULL) // first child expansion
+	{
+		father->first_child = to_add;
+		father->last_child = to_add;
+	}
+	else
+	{
+		father->last_child->brother = to_add;
+	}
+	++father->num_ex_child;
+	father->unex_children->pop_front(); //TODO refactor later
+	to_add->father = father;
+}
+
+Minimax::_node_data_t* Minimax::create_tree_node()
+{
+	struct _node_data_t* to_return = (Minimax::_node_data_t*)malloc(sizeof(Minimax::_node_data_t));
+
+	to_return->current = NULL;
+	to_return->value = 0;
+	to_return->father = NULL;
+	to_return->brother = NULL;
+	to_return->first_child = NULL;
+	to_return->last_child = NULL;
+	to_return->num_ex_child = 0;
+	to_return->unex_children = NULL;
+
+	return to_return;
+}
+
+void Minimax::destroy_tree_node(Minimax::_node_data_t* node)
+{
+	delete node->current;
+	node->current = NULL;
+
+	struct _node_data_t* t_child = node->first_child;
+
+	while (t_child != NULL)
+	{
+		struct _node_data_t* t_brother = t_child->brother;
+		destroy_tree_node(t_child);
+		t_child = t_brother;
+	}
+	node->first_child = NULL;
+
+	while (!node->unex_children->empty())
+	{
+		node->unex_children->pop_front(); //TODO refactor later
+	}
+	delete node->unex_children;
+	node->unex_children = NULL;
+}
 
 void Minimax::count_direction(Boards* board,
 		move_t cur_idx,
@@ -184,4 +272,58 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 	}
 
 	return to_return;
+}
+
+double Minimax::do_maximin(Minimax::_node_data_t* node, double alpha, double beta, int depth)
+{
+	if (depth == 0)
+	{
+		return node->value;
+	}
+	std::list<move_t*>::iterator it = node->unex_children->begin();
+	while (it != node->unex_children->end())
+	{
+		generate_child(node);
+		double value = do_minimax(node->last_child,alpha,beta,depth - 1);
+
+		if (value > alpha)
+		{
+			alpha = value;
+		}
+		if (alpha >= beta)
+		{
+			return alpha;
+		}
+
+		it = node->unex_children->begin();
+	}
+
+	return alpha;
+}
+
+double Minimax::do_minimax(Minimax::_node_data_t* node, double alpha, double beta, int depth)
+{
+	if (depth == 0)
+	{
+		return node->value;
+	}
+	std::list<move_t*>::iterator it = node->unex_children->begin();
+	while (it != node->unex_children->end())
+	{
+		generate_child(node);
+		double value = do_maximin(node->last_child,alpha,beta,depth - 1);
+
+		if (value < beta)
+		{
+			beta = value;
+		}
+		if (beta <= alpha)
+		{
+			return beta;
+		}
+
+		it = node->unex_children->begin();
+	}
+
+	return beta;
 }

@@ -61,6 +61,14 @@ move_t* allocate_move()
 	return (move_t*)malloc(sizeof(move_t));
 }
 
+void cpy_move(move_t* src, move_t* dst)
+{
+	dst->player = src->player;
+	dst->board = src->board;
+	dst->row = src->row;
+	dst->col = src->col;
+}
+
 void set_dir_vals(direction_t* dir, int brd_dir, int row_dir, int col_dir)
 {
 	dir->brd_dir = brd_dir;

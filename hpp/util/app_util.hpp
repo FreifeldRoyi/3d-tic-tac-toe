@@ -19,6 +19,7 @@ BYTE* allocate_BYTE(unsigned num);
 BYTE* BYTE_memcpy(BYTE* dest, BYTE* src, unsigned num_of_bytes);
 
 move_t* allocate_move();
+void cpy_move(move_t* src, move_t* dst);
 
 void set_dir_vals(direction_t* dir, int brd_dir, int row_dir, int col_dir);
 direction_t* init_directions();

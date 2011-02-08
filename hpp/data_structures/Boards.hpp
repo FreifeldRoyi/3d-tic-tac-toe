@@ -3,6 +3,8 @@
 
 #include "ByteArray.hpp"
 
+#include <list>
+
 #define IN_RANGE(idx,upper_bound) (((idx) >= 0) && ((idx) < (upper_bound)))
 
 class Boards
@@ -114,7 +116,7 @@ class Boards
 
 		/**
 		 * returns the player whos bit is on
-		 * or a negative number otherwise
+		 * or the number of players if no bit is on
 		 */
 		player_e whos_bit_on(move_t* move);
 
@@ -131,10 +133,15 @@ class Boards
 		ByteArray* get_o_board(int idx = -1) const;
 		ByteArray* get_taken_board(int idx = -1) const;
 
-		int get_cell_taken() const;
+		int get_empty_slots() const;
 
 		move_err_e player_move(move_t* move,
 				bool take_back);
+
+		/**
+		 * returns all possible moves on board
+		 */
+		std::list<move_t*>* possible_moves(player_e player);
 
 		std::string to_string(unsigned space = 0);
 };

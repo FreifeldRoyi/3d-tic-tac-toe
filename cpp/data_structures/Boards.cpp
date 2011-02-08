@@ -23,7 +23,7 @@ Boards::Boards(const Boards& brd)
 	_num_of_boards = brd.get_num_of_boards();
 	_board_dim = brd.get_board_dim();
 
-	_empty_slots = brd.get_cell_taken();
+	_empty_slots = brd.get_empty_slots();
 
 	_boards[O_PLAYER] = brd.get_o_board();
 	_boards[X_PLAYER] = brd.get_x_board();
@@ -65,7 +65,7 @@ ByteArray* Boards::get_taken_board(int idx) const
 	return get_board(_taken,idx);
 }
 
-int Boards::get_cell_taken() const
+int Boards::get_empty_slots() const
 {
 	return _empty_slots;
 }
@@ -74,6 +74,32 @@ move_err_e Boards::player_move(move_t* move,
 		bool take_back)
 {
 	return set_move(move,take_back);
+}
+
+std::list<move_t*>* Boards::possible_moves(player_e player)
+{
+	std::list<move_t*>* to_return = new std::list<move_t*>();
+
+	for (int brd = 0; brd < static_cast<int>(_num_of_boards); ++brd)
+	{
+		for (int row = 0; row < static_cast<int>(_board_dim); ++row)
+		{
+			for (int col = 0; col < static_cast<int>(_board_dim); ++col)
+			{
+				move_t t_mv = {player,brd,row,col};
+				player_e t_pl = whos_bit_on(&t_mv);
+
+				if (t_pl == NUM_OF_PLAYERS)
+				{
+					move_t* to_add = allocate_move();
+					cpy_move(&t_mv,to_add);
+					to_return->push_front(to_add);
+				}
+			}
+		}
+	}
+
+	return to_return;
 }
 
 std::string Boards::to_string(unsigned space)
