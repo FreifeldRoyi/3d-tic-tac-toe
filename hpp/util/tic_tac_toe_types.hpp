@@ -35,7 +35,8 @@ enum move_err_e
 	ERR_BOARD = 2, //board input was wrong
 	ERR_ROW = 4, //row input was wrong
 	ERR_COL = 8, //col input was wrong
-	ERR_MOVE_ILLEGAL = 16 //move illegal - place already taken
+	ERR_MOVE_ILLEGAL = 16, //move illegal - place already taken
+	ERR_GAME_END = 32
 };
 
 typedef unsigned err_composition;
@@ -93,6 +94,18 @@ enum direction_e
 	DIR_MULT_PIERCE = 12,
 
 	NUMBER_OF_DIRECTIONS
+};
+
+enum minimax_log_type_e
+{
+	LOG_ALPHA,
+	LOG_PRUNE_ALPHA,
+	LOG_BETA,
+	LOG_PRUNE_BETA,
+	LOG_MINIMAX_NODE_VALUE,
+	LOG_MAXIMIN_NODE_VALUE,
+	LOG_MAXIMIN_VALUE,
+	LOG_MINIMAX_VALUE
 };
 
 /* logic operations */

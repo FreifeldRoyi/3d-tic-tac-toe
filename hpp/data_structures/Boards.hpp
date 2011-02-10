@@ -14,6 +14,7 @@ class Boards
 		unsigned _board_dim;
 
 		int _empty_slots; //empty slots left on the board
+		victory_e _game_end;
 
 		ByteArray* _boards[NUM_OF_PLAYERS];
 		ByteArray* _taken;
@@ -76,6 +77,10 @@ class Boards
 		 */
 		move_err_e set_move(move_t* move,
 				bool take_back);
+
+		bool count_direction(move_t cur_idx, direction_t* dir);
+		bool apply_direction_count(move_t* move, direction_e dir); //TODO refactor later somehow with one in Minimax
+		void end_check(move_t* move);
 
 		void dec_empty_slots();
 
@@ -141,7 +146,9 @@ class Boards
 		/**
 		 * returns all possible moves on board
 		 */
-		std::list<move_t*>* possible_moves(player_e player);
+		std::list<move_t>* possible_moves(player_e player);
+
+		victory_e get_game_state() const;
 
 		std::string to_string(unsigned space = 0);
 };

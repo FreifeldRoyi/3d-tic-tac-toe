@@ -13,7 +13,7 @@ Boards::Boards(unsigned num_of_boards, unsigned boards_dim) :
 
 	_empty_slots = boards_dim * boards_dim * num_of_boards;
 
-
+	_game_end = VIC_CONT;
 
 	_space_per_cell = 3;
 }
@@ -24,6 +24,7 @@ Boards::Boards(const Boards& brd)
 	_board_dim = brd.get_board_dim();
 
 	_empty_slots = brd.get_empty_slots();
+	_game_end = brd.get_game_state();
 
 	_boards[O_PLAYER] = brd.get_o_board();
 	_boards[X_PLAYER] = brd.get_x_board();
@@ -76,9 +77,9 @@ move_err_e Boards::player_move(move_t* move,
 	return set_move(move,take_back);
 }
 
-std::list<move_t*>* Boards::possible_moves(player_e player)
+std::list<move_t>* Boards::possible_moves(player_e player)
 {
-	std::list<move_t*>* to_return = new std::list<move_t*>();
+	std::list<move_t>* to_return = new std::list<move_t>();
 
 	for (int brd = 0; brd < static_cast<int>(_num_of_boards); ++brd)
 	{
@@ -91,15 +92,21 @@ std::list<move_t*>* Boards::possible_moves(player_e player)
 
 				if (t_pl == NUM_OF_PLAYERS)
 				{
-					move_t* to_add = allocate_move();
-					cpy_move(&t_mv,to_add);
-					to_return->push_front(to_add);
+					move_t to_add;
+					to_add.player = player;
+					cpy_move(&t_mv,&to_add);
+					to_return->push_back(to_add);
 				}
 			}
 		}
 	}
 
 	return to_return;
+}
+
+victory_e Boards::get_game_state() const
+{
+	return _game_end;
 }
 
 std::string Boards::to_string(unsigned space)
@@ -225,6 +232,7 @@ move_err_e Boards::set_move(move_t* move,
 							t_move_board->set_bit(t_byte_start_idx,t_bit_to_change); //set the correct bit
 							_taken->set_bit(t_byte_start_idx,t_bit_to_change); //mark place as taken
 							dec_empty_slots();
+							end_check(move);
 							to_return = ERR_OK;
 						}
 						else
@@ -251,6 +259,81 @@ move_err_e Boards::set_move(move_t* move,
 		to_return = ERR_START;
 
 	return to_return;
+}
+
+bool Boards::count_direction(move_t cur_idx, direction_t* dir)
+{
+	if (dir->brd_dir != 0 || dir->row_dir != 0 || dir->col_dir != 0)
+	{
+		cur_idx.row += dir->row_dir;
+		cur_idx.col += dir->col_dir;
+		cur_idx.board += dir->brd_dir;
+
+		if (IN_RANGE(cur_idx.row,_board_dim) &&
+				IN_RANGE(cur_idx.col,_board_dim) &&
+				IN_RANGE(cur_idx.board,_board_dim))
+		{
+			player_e player = whos_bit_on(&cur_idx);
+			if (player != cur_idx.player)
+			{
+				return false;
+			}
+			count_direction(cur_idx,dir);
+		}
+		/*else
+		{
+			return true;
+		}*/
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Boards::apply_direction_count(move_t* move, direction_e dir)
+{
+	bool to_return;
+	direction_t t_dir = DIRECTIONS[dir];
+	to_return = count_direction(*move,&t_dir);
+
+	t_dir.brd_dir = -t_dir.brd_dir;
+	t_dir.row_dir = -t_dir.row_dir;
+	t_dir.col_dir = -t_dir.col_dir;
+	to_return = to_return && count_direction(*move,&t_dir);
+
+	return to_return;
+}
+
+
+void Boards::end_check(move_t* move)
+{
+	bool t_win = false;
+	for (int dir = DIR_SNGL_ROW; dir < NUMBER_OF_DIRECTIONS && t_win == false; ++dir)
+	{
+		direction_e t_dir = static_cast<direction_e>(dir);
+		if (dir_conditions(move,_num_of_boards,_board_dim,t_dir))
+		{
+			t_win = apply_direction_count(move,t_dir);
+		}
+	}
+
+	if (t_win)
+	{
+		if (move->player == X_PLAYER)
+		{
+			_game_end = VIC_X;
+		}
+		else if (move->player == O_PLAYER)
+		{
+			_game_end = VIC_O;
+		}
+		else {}
+	}
+	else if (_empty_slots == 0)
+	{
+		_game_end = VIC_DRAW;
+	}
 }
 
 void Boards::dec_empty_slots()

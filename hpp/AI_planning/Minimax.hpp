@@ -25,18 +25,20 @@ class Minimax
 		struct _node_data_t* last_child;
 		int num_ex_child;
 
-		std::list<move_t*>* unex_children; //unexpanded
+		std::list<move_t>* unex_children; //unexpanded
+
+		move_t move_played;
+		move_t best_move;
 
 		//NOTE: number of children will be the number of empty slots in current
 	} node_data_t;
 
-
-
 	private:
 		int _num_of_ply; // holds the number of steps that the minimax tree needs to look ahead
 		player_e _player;
-		direction_t* _directions;
-
+		//direction_t* _directions;
+		move_t* _best_moves;
+		double _best_val;
 
 		struct _node_data_t* generate_top_node(Boards* board);
 		void generate_child(struct _node_data_t* father);
@@ -54,8 +56,8 @@ class Minimax
 		 *
 		 * /param cur_idx - the index of the current location
 		 * /param dir - the direction to count
-		 * /param player_count - output parameter
-		 * /param opp_count - output parameter
+		 * /param x_count - output parameter
+		 * /param o_count - output parameter
 		 */
 		void count_direction(Boards* board,
 				move_t cur_idx,
@@ -69,13 +71,13 @@ class Minimax
 		 *
 		 * /param cur_idx - the move to make
 		 * /param dir - the direction to apply counting on
-		 * /param player_count - output parameter
-		 * /param opp_count - output parameter
+		 * /param x_count - output parameter
+		 * /param o_count - output parameter
 		 */
 		void apply_direction_count(Boards* board,
 				move_t* cur_idx,
 				direction_e dir,
-				int* player_count,
+				int* plaer_count,
 				int* opp_count);
 
 		/**
@@ -92,7 +94,7 @@ class Minimax
 		 * /param move - the move played
 		 * /param dir - the direction
 		 */
-		bool dir_conditions(Boards* board, move_t* move, direction_e dir) const;
+		//bool dir_conditions(Boards* board, move_t* move, direction_e dir) const;
 
 		/**
 		 * calculates the new static heuristic value after
@@ -102,6 +104,8 @@ class Minimax
 
 		double do_maximin(struct _node_data_t* node, double alpha, double beta, int depth);
 		double do_minimax(struct _node_data_t* node, double alpha, double beta, int depth);
+
+		void log_test(struct _node_data_t* node, int ply_lvl, double data, minimax_log_type_e type, bool log = false);
 
 	public:
 		Minimax(player_e player, int num_of_ply = 4);

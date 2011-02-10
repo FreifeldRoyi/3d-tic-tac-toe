@@ -21,13 +21,16 @@ UIController::UIController()
 	_boards = NULL;
 	_strat_arr[O_PLAYER] = NULL;
 	_strat_arr[X_PLAYER] = NULL;
-	_game_end = VIC_CONT;
+	//_game_end = VIC_CONT;
+
+	init_directions();
 }
 
 UIController::~UIController()
 {
 	reset();
 	delete _moves;
+	destroy_directions();
 }
 
 void UIController::take_back()
@@ -92,7 +95,7 @@ void UIController::play_1P_VS_COMP()
 {
 	input_game_settings();
 
-	srand(time(NULL));
+	/*srand(time(NULL));
 	player_e comp_piece = static_cast<player_e>(rand() % 2);
 
 	int look_ahead = input_computer_settings();
@@ -102,6 +105,11 @@ void UIController::play_1P_VS_COMP()
 
 	std::cout << "1P is " << player_string(CHANGE_PLAYER(comp_piece)) << std::endl;
 	std::cout << "Computer is " << player_string(comp_piece) << std::endl;
+	*/
+	int look_ahead = input_computer_settings();
+	_strat_arr[O_PLAYER] = new CompStrategy(_boards, O_PLAYER, look_ahead);
+	_strat_arr[X_PLAYER] = new HumanStrategy(_boards,X_PLAYER);
+
 
 	play();
 }
@@ -156,7 +164,7 @@ void UIController::reset()
 	}
 
 	_moves->erase(_moves->begin(),_moves->end());
-	_game_end = VIC_CONT;
+	//_game_end = VIC_CONT;
 }
 
 void UIController::push_move(move_t* move)
@@ -191,18 +199,9 @@ err_composition UIController::set_move(move_t* move)
 	return to_return;
 }
 
-bool UIController::is_end()
+victory_e UIController::game_state()
 {
-	bool to_return = false;
-
-	//move_t t_last_move;
-	//last_move(&t_last_move);
-
-
-	//TODO end game check maybe add counting in Boards... needs more thinking
-
-
-	return to_return;
+	return _boards->get_game_state();
 }
 
 void UIController::try_move(move_t* move)
@@ -228,7 +227,7 @@ void UIController::try_move(move_t* move)
 void UIController::play()
 {
 	move_t move;
-
+	victory_e t_winner = VIC_CONT;
 	move.player = X_PLAYER;
 
 	do
@@ -236,5 +235,19 @@ void UIController::play()
 		try_move(&move);
 		move.player = CHANGE_PLAYER(move.player);
 
-	} while (!is_end());
+		t_winner = game_state();
+	} while (t_winner == VIC_CONT);
+
+	if (t_winner == VIC_X)
+	{
+		std::cout << "Congratulations! X Player is the winner!" << std::endl;
+	}
+	else if (t_winner == VIC_O)
+	{
+		std::cout << "Congratulations! O Player is the winner!" << std::endl;
+	}
+	else if (t_winner == VIC_DRAW)
+	{
+		std::cout << "DRAW!!!" << std::endl;
+	}
 }

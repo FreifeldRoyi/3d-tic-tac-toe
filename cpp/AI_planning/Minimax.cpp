@@ -10,14 +10,20 @@
 #include <malloc.h>
 #include <limits>
 
+//TODO delete later
+#include <iostream>
+//TODO delete later
+
 Minimax::Minimax(player_e player, int num_of_ply) : _num_of_ply(num_of_ply), _player(player)
 {
-	_directions = init_directions();
+	//_directions = init_directions();
+	_best_moves = NULL;
+	_best_val = -INFINITY;
 }
 
 Minimax::~Minimax()
 {
-	destroy_directions(_directions);
+	destroy_directions();
 }
 
 void Minimax::set_num_of_ply(int nop)
@@ -31,19 +37,20 @@ void Minimax::best_move(Boards* cur_brd, player_e player, move_t* move)
 	switch (player)
 	{
 		case (O_PLAYER): //minimizer
-			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
 			break;
 
 		case (X_PLAYER): //maximizer
-			do_maximin(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			do_maximin(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
 			break;
 
 		default:
-			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply - 1);
+			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
 			break;
 	};
 
-	//cpy_move(&t_top_node->best_move,move);
+	cpy_move(&t_top_node->best_move,move);
+	destroy_tree_node(t_top_node);
 }
 
 /*private*/
@@ -64,12 +71,15 @@ void Minimax::generate_child(struct _node_data_t* father)
 
 	Boards* board = new Boards(*(father->current));
 
-	move_t* t_mv = father->unex_children->front(); //TODO refactor later //access child move
-	board->player_move(t_mv,false);
+	move_t t_mv = father->unex_children->front(); //TODO refactor later //access child move
+	board->player_move(&t_mv,false);
 
 	to_add->current = board;
-	to_add->value = calc_hueristic(father->current,t_mv);
-	to_add->unex_children = board->possible_moves(CHANGE_PLAYER(t_mv->player)); //child moves will be opponent's moves
+	to_add->value = calc_hueristic(father->current,&t_mv);
+	to_add->unex_children = board->possible_moves(CHANGE_PLAYER(t_mv.player)); //child moves will be opponent's moves
+
+	cpy_move(&t_mv,&to_add->move_played);
+	cpy_move(&t_mv,&to_add->best_move);
 
 	if (father->last_child == NULL) // first child expansion
 	{
@@ -79,6 +89,7 @@ void Minimax::generate_child(struct _node_data_t* father)
 	else
 	{
 		father->last_child->brother = to_add;
+		father->last_child = to_add;
 	}
 	++father->num_ex_child;
 	father->unex_children->pop_front(); //TODO refactor later
@@ -132,6 +143,10 @@ void Minimax::count_direction(Boards* board,
 {
 	if (dir->brd_dir != 0 || dir->row_dir != 0 || dir->col_dir != 0)
 	{
+		cur_idx.row += dir->row_dir;
+		cur_idx.col += dir->col_dir;
+		cur_idx.board += dir->brd_dir;
+
 		if (IN_RANGE(cur_idx.row,board->get_board_dim()) &&
 				IN_RANGE(cur_idx.col,board->get_board_dim()) &&
 				IN_RANGE(cur_idx.board,board->get_board_dim()))
@@ -141,15 +156,12 @@ void Minimax::count_direction(Boards* board,
 			{
 				++(*player_count);
 			}
-			else if (CHANGE_PLAYER(cur_idx.player) == player)
+			else if (player == CHANGE_PLAYER(cur_idx.player))
 			{
 				++(*opp_count);
 			}
 			else {} //bit is off
 
-			cur_idx.row += dir->row_dir;
-			cur_idx.col += dir->col_dir;
-			cur_idx.board += dir->brd_dir;
 			count_direction(board,cur_idx,dir,player_count,opp_count);
 		}
 	}
@@ -161,81 +173,13 @@ void Minimax::apply_direction_count(Boards* board,
 		int* player_count,
 		int* opp_count)
 {
-	if (dir_conditions(board,cur_idx,dir))
-	{
-		direction_t t_dir = _directions[dir];
-		count_direction(board,*cur_idx,&t_dir,player_count,opp_count);
+	direction_t t_dir = DIRECTIONS[dir];
+	count_direction(board,*cur_idx,&t_dir,player_count,opp_count);
 
-		t_dir.brd_dir = -t_dir.brd_dir;
-		t_dir.row_dir = -t_dir.row_dir;
-		t_dir.col_dir = -t_dir.col_dir;
-		count_direction(board,*cur_idx,&t_dir,player_count,opp_count);
-	}
-}
-
-bool Minimax::dir_conditions(Boards* board, move_t* move, direction_e dir) const
-{
-	bool to_return;
-
-	switch (dir)
-	{
-		case (DIR_SNGL_ROW):
-			to_return = true;
-			break;
-
-		case (DIR_SNGL_COL):
-			to_return = true;
-			break;
-
-		case (DIR_SNGL_DIAG_UL_DR):
-			to_return = move->row == move->col;
-			break;
-
-		case (DIR_SNGL_DIAG_UR_DL):
-			to_return = move->row + move->col == board->get_board_dim() - 1;
-			break;
-
-		case (DIR_MULT_ROW_TL_BR):
-			to_return = move->col == move->board;
-			break;
-
-		case (DIR_MULT_ROW_TR_BL):
-			to_return = move->board == board->get_board_dim() - 1 - move->col;
-			break;
-
-		case (DIR_MULT_COL_TU_BD):
-			to_return = move->row == move->board;
-			break;
-
-		case (DIR_MULT_COL_TD_BU):
-			to_return = move->board == board->get_board_dim() - 1 - move->row;
-			break;
-
-		case (DIR_MULT_DIAG_TUR_BDL):
-			to_return = move->row + move->col == board->get_board_dim() - 1 && move->row == move->board;
-			break;
-
-		case (DIR_MULT_DIAG_TUL_BDR):
-			to_return = move->row == move->col && move->board == move->row;
-			break;
-
-		case (DIR_MULT_DIAG_TDL_BUR):
-			to_return = move->row + move->col == board->get_board_dim() - 1 && move->board == move->col;
-			break;
-
-		case (DIR_MULT_DIAG_TDR_BUL):
-			to_return = move->row == move->col && move->board == board->get_board_dim() - 1 - move->row;
-			break;
-
-		case (DIR_MULT_PIERCE):
-			to_return = true;
-			break;
-
-		default:
-			to_return = false;
-	}
-
-	return to_return;
+	t_dir.brd_dir = -t_dir.brd_dir;
+	t_dir.row_dir = -t_dir.row_dir;
+	t_dir.col_dir = -t_dir.col_dir;
+	count_direction(board,*cur_idx,&t_dir,player_count,opp_count);
 }
 
 double Minimax::calc_hueristic(Boards* board, move_t* move)
@@ -259,9 +203,18 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 		player_count = 0;
 		opp_count = 0;
 
-		apply_direction_count(board,move,(direction_e)dir,&player_count,&opp_count);
-		++player_lines[player_count];
-		++opp_lines[opp_count];
+		if (dir_conditions(move,board->get_num_of_boards(),board->get_board_dim(),static_cast<direction_e>(dir)))
+		{
+			apply_direction_count(board,move,(direction_e)dir,&player_count,&opp_count);
+
+			//Exclusive OR(A,B) = (!A AND B) OR (A AND !B)
+			//Lines occupied by both player's pieces are obsolete\redundant
+			if ((player_count != 0 && opp_count == 0) || (player_count == 0 && opp_count != 0))
+			{
+				++player_lines[player_count];
+				++opp_lines[opp_count];
+			}
+		}
 	}
 
 	to_return += player_lines[0] - opp_lines[0];
@@ -276,11 +229,12 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 
 double Minimax::do_maximin(Minimax::_node_data_t* node, double alpha, double beta, int depth)
 {
-	if (depth == 0)
+	if (depth == 0 || node->current->get_game_state() != VIC_CONT)
 	{
+		log_test(node,depth,node->value,LOG_MAXIMIN_NODE_VALUE);
 		return node->value;
 	}
-	std::list<move_t*>::iterator it = node->unex_children->begin();
+	std::list<move_t>::iterator it = node->unex_children->begin();
 	while (it != node->unex_children->end())
 	{
 		generate_child(node);
@@ -288,26 +242,31 @@ double Minimax::do_maximin(Minimax::_node_data_t* node, double alpha, double bet
 
 		if (value > alpha)
 		{
+			log_test(node,depth,value,LOG_MAXIMIN_VALUE);
 			alpha = value;
+			cpy_move(&node->last_child->move_played,&node->best_move);
 		}
 		if (alpha >= beta)
 		{
+			log_test(node,depth,alpha,LOG_PRUNE_ALPHA);
 			return alpha;
 		}
 
 		it = node->unex_children->begin();
 	}
 
+	log_test(node,depth,alpha,LOG_ALPHA);
 	return alpha;
 }
 
 double Minimax::do_minimax(Minimax::_node_data_t* node, double alpha, double beta, int depth)
 {
-	if (depth == 0)
+	if (depth == 0 || node->current->get_game_state() != VIC_CONT)
 	{
+		log_test(node,depth,node->value,LOG_MINIMAX_NODE_VALUE);
 		return node->value;
 	}
-	std::list<move_t*>::iterator it = node->unex_children->begin();
+	std::list<move_t>::iterator it = node->unex_children->begin();
 	while (it != node->unex_children->end())
 	{
 		generate_child(node);
@@ -315,15 +274,70 @@ double Minimax::do_minimax(Minimax::_node_data_t* node, double alpha, double bet
 
 		if (value < beta)
 		{
+			log_test(node,depth,value,LOG_MINIMAX_VALUE);
 			beta = value;
+			cpy_move(&node->last_child->move_played,&node->best_move);
 		}
 		if (beta <= alpha)
 		{
+			log_test(node,depth,beta,LOG_PRUNE_BETA);
 			return beta;
 		}
 
 		it = node->unex_children->begin();
 	}
 
+	log_test(node,depth,beta,LOG_BETA);
 	return beta;
+}
+
+void Minimax::log_test(struct _node_data_t* node, int ply_lvl, double data, minimax_log_type_e type, bool log)
+{
+	if (log)
+	{
+		std::cout << "For ply lvl " << ply_lvl << std::endl;
+		std::cout << player_string(node->move_played.player) << std::endl;
+		std::cout << "Board " << node->move_played.board << std::endl;
+		std::cout << "Row " << node->move_played.row << std::endl;
+		std::cout << "Column " << node->move_played.col << std::endl;
+
+		switch (type)
+		{
+			case (LOG_ALPHA):
+				std::cout << "maximin alpha value is " << data << std::endl;
+				break;
+
+			case (LOG_BETA):
+				std::cout << "minimax beta value is " << data << std::endl;
+				break;
+
+			case (LOG_PRUNE_ALPHA):
+				std::cout << "maximin prune alpha value is " << data << std::endl;
+				break;
+
+			case (LOG_PRUNE_BETA):
+				std::cout << "minimax prune beta value is " << data << std::endl;
+				break;
+
+			case (LOG_MINIMAX_NODE_VALUE):
+				std::cout << "minimax node value is " << data << std::endl;
+				break;
+
+			case (LOG_MAXIMIN_NODE_VALUE):
+				std::cout << "maximin node value is " << data << std::endl;
+				break;
+
+			case (LOG_MAXIMIN_VALUE):
+				std::cout << "maximin value is " << data << std::endl;
+				break;
+
+			case (LOG_MINIMAX_VALUE):
+				std::cout << "minimax value is " << data << std::endl;
+				break;
+
+			default:
+				std::cout << "???" << std::endl;
+				break;
+		}
+	}
 }

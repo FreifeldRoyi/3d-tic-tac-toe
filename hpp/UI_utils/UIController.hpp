@@ -19,7 +19,7 @@ class UIController
 		Boards* _boards;
 		std::list<move_t>* _moves; //moves
 		Strategy* _strat_arr[NUM_OF_PLAYERS];
-		victory_e _game_end;
+		//victory_e _game_end;
 
 		/**
 		 * resets data structures
@@ -46,7 +46,7 @@ class UIController
 		/**
 		 * checks if the game ended after the last move
 		 */
-		bool is_end();
+		victory_e game_state();
 
 		/**
 		 * Will apply strategy s until it's a valid one
