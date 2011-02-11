@@ -14,6 +14,8 @@
 #include <iostream>
 //TODO delete later
 
+#define CHANGE_MINIMAX_TYPE(type) (static_cast<minimax_type_e>(1 - (type)))
+
 Minimax::Minimax(player_e player, int num_of_ply) : _num_of_ply(num_of_ply), _player(player)
 {
 	//_directions = init_directions();
@@ -37,15 +39,15 @@ void Minimax::best_move(Boards* cur_brd, player_e player, move_t* move)
 	switch (player)
 	{
 		case (O_PLAYER): //minimizer
-			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
+			apply_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply,MINIMIZE);
 			break;
 
 		case (X_PLAYER): //maximizer
-			do_maximin(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
+			apply_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply,MAXIMIZE);
 			break;
 
 		default:
-			do_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply);
+			apply_minimax(t_top_node,-INFINITY,+INFINITY,_num_of_ply,MINIMIZE);
 			break;
 	};
 
@@ -73,6 +75,10 @@ void Minimax::generate_child(struct _node_data_t* father)
 
 	move_t t_mv = father->unex_children->front(); //TODO refactor later //access child move
 	board->player_move(&t_mv,false);
+
+	//TODO delete
+	std::cout << board->to_string() << std::endl;
+	//TODO end delete
 
 	to_add->current = board;
 	to_add->value = calc_hueristic(father->current,&t_mv);
@@ -211,8 +217,19 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 			//Lines occupied by both player's pieces are obsolete\redundant
 			if ((player_count != 0 && opp_count == 0) || (player_count == 0 && opp_count != 0))
 			{
-				++player_lines[player_count];
-				++opp_lines[opp_count];
+				if (opp_count == static_cast<direction_e>(board->get_board_dim()) - 1)
+				{
+					if (player_lines[opp_count] == 0)
+					{
+						++opp_lines[opp_count];
+						++player_lines[player_count];
+					}
+				}
+				else
+				{
+					++player_lines[player_count];
+					++opp_lines[opp_count];
+				}
 			}
 		}
 	}
@@ -227,68 +244,53 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 	return to_return;
 }
 
-double Minimax::do_maximin(Minimax::_node_data_t* node, double alpha, double beta, int depth)
+double Minimax::apply_minimax(struct _node_data_t* node, double alpha, double beta, int depth, Minimax::minimax_type_e type)
 {
+	double to_return;
+	bool truncate = false;
+
 	if (depth == 0 || node->current->get_game_state() != VIC_CONT)
 	{
-		log_test(node,depth,node->value,LOG_MAXIMIN_NODE_VALUE);
-		return node->value;
+		to_return = node->value;
 	}
-	std::list<move_t>::iterator it = node->unex_children->begin();
-	while (it != node->unex_children->end())
+	else
 	{
-		generate_child(node);
-		double value = do_minimax(node->last_child,alpha,beta,depth - 1);
+		std::list<move_t>::iterator it = node->unex_children->begin();
 
-		if (value > alpha)
+		while (it != node->unex_children->end() && !truncate)
 		{
-			log_test(node,depth,value,LOG_MAXIMIN_VALUE);
-			alpha = value;
-			cpy_move(&node->last_child->move_played,&node->best_move);
-		}
-		if (alpha >= beta)
-		{
-			log_test(node,depth,alpha,LOG_PRUNE_ALPHA);
-			return alpha;
+			generate_child(node);
+			double value = apply_minimax(node->last_child,alpha,beta,depth - 1, CHANGE_MINIMAX_TYPE(type));
+
+			if (value > alpha && type == MAXIMIZE)
+			{
+				alpha = value;
+				cpy_move(&node->last_child->move_played,&node->best_move);
+			}
+			if (value < beta && type == MINIMIZE)
+			{
+				beta = value;
+				cpy_move(&node->last_child->move_played,&node->best_move);
+			}
+			if (((alpha >= beta) && (type == MAXIMIZE)) || ((beta <= alpha) && (type == MINIMIZE)))
+			{
+				truncate = true;
+			}
+
+			it = node->unex_children->begin();
 		}
 
-		it = node->unex_children->begin();
+		if (type == MAXIMIZE)
+		{
+			to_return = alpha;
+		}
+		else
+		{
+			to_return = beta;
+		}
 	}
 
-	log_test(node,depth,alpha,LOG_ALPHA);
-	return alpha;
-}
-
-double Minimax::do_minimax(Minimax::_node_data_t* node, double alpha, double beta, int depth)
-{
-	if (depth == 0 || node->current->get_game_state() != VIC_CONT)
-	{
-		log_test(node,depth,node->value,LOG_MINIMAX_NODE_VALUE);
-		return node->value;
-	}
-	std::list<move_t>::iterator it = node->unex_children->begin();
-	while (it != node->unex_children->end())
-	{
-		generate_child(node);
-		double value = do_maximin(node->last_child,alpha,beta,depth - 1);
-
-		if (value < beta)
-		{
-			log_test(node,depth,value,LOG_MINIMAX_VALUE);
-			beta = value;
-			cpy_move(&node->last_child->move_played,&node->best_move);
-		}
-		if (beta <= alpha)
-		{
-			log_test(node,depth,beta,LOG_PRUNE_BETA);
-			return beta;
-		}
-
-		it = node->unex_children->begin();
-	}
-
-	log_test(node,depth,beta,LOG_BETA);
-	return beta;
+	return to_return;
 }
 
 void Minimax::log_test(struct _node_data_t* node, int ply_lvl, double data, minimax_log_type_e type, bool log)

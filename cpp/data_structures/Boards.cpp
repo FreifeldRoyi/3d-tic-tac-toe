@@ -241,6 +241,9 @@ move_err_e Boards::set_move(move_t* move,
 					else if (take_back) //undo last move
 					{
 						t_move_board->reset_bit(t_byte_start_idx,t_bit_to_change);
+						_taken->reset_bit(t_byte_start_idx,t_bit_to_change);
+						inc_empty_slots();
+						_game_end = VIC_CONT;
 						to_return = ERR_OK;
 					}
 					else
@@ -336,9 +339,32 @@ void Boards::end_check(move_t* move)
 	}
 }
 
+bool Boards::block_check(move_t* move)
+{
+	bool to_return = false;
+
+	move_t t_mv;
+	cpy_move(move,&t_mv);
+	t_mv.player = CHANGE_PLAYER(move->player);
+
+	set_move(move,false);
+	if (_game_end != VIC_CONT)
+	{
+		to_return = true;
+	}
+	set_move(move,true);
+
+	return to_return;
+}
+
 void Boards::dec_empty_slots()
 {
 	--_empty_slots;
+}
+
+void Boards::inc_empty_slots()
+{
+	++_empty_slots;
 }
 
 player_e Boards::whos_bit_on(move_t* move)

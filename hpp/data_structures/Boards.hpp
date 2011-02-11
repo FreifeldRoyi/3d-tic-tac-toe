@@ -83,6 +83,7 @@ class Boards
 		void end_check(move_t* move);
 
 		void dec_empty_slots();
+		void inc_empty_slots();
 
 		/*******to_string helper functions*******/
 
@@ -149,6 +150,7 @@ class Boards
 		std::list<move_t>* possible_moves(player_e player);
 
 		victory_e get_game_state() const;
+		bool block_check(move_t* move);
 
 		std::string to_string(unsigned space = 0);
 };

@@ -14,6 +14,12 @@
 
 class Minimax
 {
+	enum minimax_type_e
+	{
+		MINIMIZE = 0,
+		MAXIMIZE = 1
+	};
+
 	struct _node_data_t
 	{
 		Boards* current; //current board state
@@ -102,8 +108,7 @@ class Minimax
 		 */
 		double calc_hueristic(Boards* board, move_t* move);
 
-		double do_maximin(struct _node_data_t* node, double alpha, double beta, int depth);
-		double do_minimax(struct _node_data_t* node, double alpha, double beta, int depth);
+		double apply_minimax(struct _node_data_t* node, double alpha, double beta, int depth, minimax_type_e type);
 
 		void log_test(struct _node_data_t* node, int ply_lvl, double data, minimax_log_type_e type, bool log = false);
 
