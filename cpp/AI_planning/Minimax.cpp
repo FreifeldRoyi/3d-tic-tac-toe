@@ -217,19 +217,20 @@ double Minimax::calc_hueristic(Boards* board, move_t* move)
 			//Lines occupied by both player's pieces are obsolete\redundant
 			if ((player_count != 0 && opp_count == 0) || (player_count == 0 && opp_count != 0))
 			{
+				//If opponent can win
 				if (opp_count == static_cast<direction_e>(board->get_board_dim()) - 1)
 				{
+					//If player can't win
 					if (player_lines[opp_count] == 0)
 					{
 						++opp_lines[opp_count];
-						++player_lines[player_count];
 					}
 				}
 				else
 				{
-					++player_lines[player_count];
 					++opp_lines[opp_count];
 				}
+				++player_lines[player_count];
 			}
 		}
 	}

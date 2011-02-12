@@ -281,12 +281,13 @@ bool Boards::count_direction(move_t cur_idx, direction_t* dir)
 			{
 				return false;
 			}
-			count_direction(cur_idx,dir);
+
+			return count_direction(cur_idx,dir);
 		}
-		/*else
+		else
 		{
 			return true;
-		}*/
+		}
 	}
 	else
 	{
