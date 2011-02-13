@@ -22,13 +22,13 @@ class Minimax
 
 	struct _node_data_t
 	{
-		Boards* current; //current board state
+		//Boards* current; //current board state
 		double value;
 
 		struct _node_data_t* father;
-		struct _node_data_t* brother;
-		struct _node_data_t* first_child; //expanded children array
-		struct _node_data_t* last_child;
+		//struct _node_data_t* brother;
+		struct _node_data_t* child; //expanded children array
+	//	struct _node_data_t* last_child;
 		int num_ex_child;
 
 		std::list<move_t>* unex_children; //unexpanded
@@ -40,14 +40,16 @@ class Minimax
 	} node_data_t;
 
 	private:
+		Boards* _boards;
 		int _num_of_ply; // holds the number of steps that the minimax tree needs to look ahead
 		player_e _player;
 		//direction_t* _directions;
-		move_t* _best_moves;
-		double _best_val;
+		//move_t* _best_moves;
+		//double _best_val;
 
 		struct _node_data_t* generate_top_node(Boards* board);
 		void generate_child(struct _node_data_t* father);
+		void remove_child(struct _node_data_t* father);
 		/**
 		 * creates a single node of the tree
 		 * /param brd - the state of the board
@@ -65,8 +67,7 @@ class Minimax
 		 * /param x_count - output parameter
 		 * /param o_count - output parameter
 		 */
-		void count_direction(Boards* board,
-				move_t cur_idx,
+		void count_direction(move_t cur_idx,
 				direction_t* dir,
 				int* player_count,
 				int* opp_count);
@@ -80,8 +81,7 @@ class Minimax
 		 * /param x_count - output parameter
 		 * /param o_count - output parameter
 		 */
-		void apply_direction_count(Boards* board,
-				move_t* cur_idx,
+		void apply_direction_count(move_t* cur_idx,
 				direction_e dir,
 				int* plaer_count,
 				int* opp_count);
@@ -106,14 +106,15 @@ class Minimax
 		 * calculates the new static heuristic value after
 		 * the move given as a parameter
 		 */
-		double calc_hueristic(Boards* board, move_t* move);
+		double calc_hueristic(move_t* move);
 
 		double apply_minimax(struct _node_data_t* node, double alpha, double beta, int depth, minimax_type_e type);
 
 		void log_test(struct _node_data_t* node, int ply_lvl, double data, minimax_log_type_e type, bool log = false);
 
 	public:
-		Minimax(player_e player, int num_of_ply = 4);
+		Minimax(Boards* brd, player_e player, int num_of_ply = 4);
+		//Minimax(player_e player, int num_of_ply = 4);
 		~Minimax();
 
 		void set_num_of_ply(int nop);

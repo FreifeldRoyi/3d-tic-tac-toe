@@ -1,6 +1,8 @@
 #include "../../hpp/data_structures/Boards.hpp"
 #include <sstream>
 
+#include <iostream>
+
 #define MAX_SPACE_PER_CELL 20
 
 Boards::Boards(unsigned num_of_boards, unsigned boards_dim) : 

@@ -8,7 +8,7 @@
 #include <malloc.h>
 #include <math.h>
 
-CompStrategy::CompStrategy(Boards* board, player_e player,int look_ahead) : _minimax(player,look_ahead)
+CompStrategy::CompStrategy(Boards* board, player_e player,int look_ahead) : _minimax(board,player,look_ahead)
 {
 //	_minimax = Minimax(player, look_ahead);
 	_board = board;

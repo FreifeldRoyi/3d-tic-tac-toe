@@ -89,7 +89,7 @@ void ByteArray::set_bit(unsigned byte_num, unsigned offset)
 
 void ByteArray::reset_bit(unsigned byte_num, unsigned offset)
 {
-	BYTE t_apply_and_op = and_op((LSB_ZERO << (BYTE_SIZE - 1 - offset)),_byte[byte_num]);
+	BYTE t_apply_and_op = xor_op((LSB_ONE << (BYTE_SIZE - 1 - offset)),_byte[byte_num]);
 	_byte[byte_num] = t_apply_and_op;
 }
 

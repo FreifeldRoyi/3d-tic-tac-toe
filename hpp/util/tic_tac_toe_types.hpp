@@ -111,6 +111,7 @@ enum minimax_log_type_e
 /* logic operations */
 #define and_op(num1,num2) ((num1) & (num2))
 #define or_op(num1,num2) ((num1) | (num2))
+#define xor_op(num1,num2) ((num1) ^ (num2))
 #define bitwise_not(num) (~(num))
 
 #endif //TIC_TAC_TOE_TYPES_HPP
