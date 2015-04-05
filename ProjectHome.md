@@ -1,0 +1,1 @@
+This project has started as an assignment for my "Search Methods in AI" course.
